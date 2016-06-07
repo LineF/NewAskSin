@@ -24,7 +24,7 @@ void THSensor::sensPoll(void) {
 
 	if (!sensTmr.done() ) return;																// step out while timer is still running
 	
-	sensTmr.set((calcSendSlot()*250 + 2000));													// set a new measurement time
+	sensTmr.set((calcSendSlot()*250 + 1000));													// set a new measurement time
 
 	if (fMeas) fMeas(&values);																	// call the measurement function
 	hm->sendWeatherEvent(regCnl,0,(uint8_t *)&values,sizeof(values));							// prepare the message and send, no burst
