@@ -22,7 +22,11 @@
 //#define AES_DBG
 
 #include "AS.h"
+#include "hardware.h"
 #include <avr/wdt.h>
+
+extern uint8_t transmitDevTryMax;
+
 
 #ifdef SUPPORT_AES
 	#include "aes.h"
@@ -46,8 +50,7 @@ void AS::init(void) {
 		dbg << F("AS.\n");																		// ...and some information
 	#endif
 
-	calibrateWatchdog();																		// calibrate the watchdog frequency (in relation to main clock)
-	dbg << F("wdt_cal: ") << wdt_cal_ms << F("\n");
+	initMillis();
 	//initLeds();																					// initialize the leds
 	initConfKey();																				// initialize the port for getting config key interrupts
 
@@ -66,6 +69,9 @@ void AS::init(void) {
 	confButton.init(this);																		// config button
 
 	initRandomSeed();
+
+	calibrateWatchdog();																		// calibrate the watchdog frequency (in relation to main clock)
+	dbg << F("wdt_cal: ") << wdt_cal_ms << F("\n");
 
 	// everything is setuped, enable RF functionality
 }
@@ -373,12 +379,12 @@ void AS::sendTimeStamp(void) {
  * counter: the counter increased at every button release.
  *
  * @param channel
- * @param burst
  * @param payload: pointer to payload
+ * @param burst
  */
 void AS::sendREMOTE(uint8_t channel, uint8_t *payload, uint8_t msg_flag) {
 	// burst flag is not needed, has to come out of list4, as well as AES flag
-	sendEvent(channel, 0, AS_MESSAGE_REMOTE_EVENT, payload, 2);
+	sendEvent(channel, AS_MESSAGE_REMOTE_EVENT, 0, payload, 2);
 }
 
 /**
@@ -527,7 +533,7 @@ inline void AS::sendSliceList(void) {
 inline void AS::sendPeerMsg(void) {
 	uint8_t retries_max;
 
-	retries_max = (stcPeer.bidi) ? 3 : 1;
+	retries_max = (stcPeer.bidi) ? transmitDevTryMax : 1;
 	
 	if (sn.active) return;																		// check if send function has a free slot, otherwise return
 	
@@ -1214,6 +1220,7 @@ inline void AS::configEnd() {
 		ee.getMasterID();
 		pairTmr.set(0);
 		didConfig = 1;
+		cnl0Change();
 	}
 	// remove message id flag to config in send module
 
@@ -1764,4 +1771,10 @@ uint32_t intTimeCvt(uint16_t iTime) {
 	} else tByte = 1;
 
 	return (uint32_t)tByte*(iTime>>5)*100;
+}
+
+// callback function from pin change interrupt - called when config key is pressed
+void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag)
+{
+	hm.pw.stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
 }

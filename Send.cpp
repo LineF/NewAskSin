@@ -84,8 +84,11 @@ void SN::poll(void) {
 			#endif
 		}
 		
-		if (!pHM->ld.active) {
-			pHM->ld.set(send);																// fire the status led
+		if (pHM->ee.getRegAddr(0, 0, 0, 5) & 0x40) {										// check if register ledMode == on
+			if (!pHM->ld.active) {
+				pHM->pw.stayAwake(100);
+				pHM->ld.set(send);															// fire the status led
+			}
 		}
 		
 		#ifdef SN_DBG																		// only if AS debug is set

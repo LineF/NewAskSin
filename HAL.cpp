@@ -6,6 +6,7 @@
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
+#include <avr/boot.h>
 #include "HAL.h"
 
 //- some macros for debugging ---------------------------------------------------------------------------------------------
@@ -71,19 +72,20 @@ void    setSleep(void) {
 	//dbg << '.';																// some debug
 }
 
-void	calibrateWatchdog() {													// to be called very early - millis must not be used yet - see below!
+void	calibrateWatchdog() {													// initMillis() must have been called yet
 	uint8_t sreg = SREG;														// remember interrupt state (sei / cli)
-	initMillis();
 	startWDG250ms();
 
-	// assume: getMillis()==0, wdt_cal_ms==0, wdt_int==0
+	uint16_t startMillis = getMillis();
+	wdt_cal_ms = 0;
+	wdt_int = 0;
 	wdt_reset();
 	sei();
 	
 	while(!wdt_int)																// wait for watchdog interrupt
 		;
 	SREG = sreg;																// restore previous interrupt state
-	wdt_cal_ms = getMillis();													// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
+	wdt_cal_ms = getMillis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
 	stopWDG();
 }
 void    startWDG() {
@@ -192,6 +194,18 @@ uint16_t getAdcValue(uint8_t adcmux) {
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
+//- system functions -------------------------------------------------------------------------------------------------
+
+// read factory defined OSCCAL value from signature row (address 0x0001)
+uint8_t getDefaultOSCCAL(void)
+{
+	uint8_t oscCal;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		oscCal = boot_signature_byte_get(0x0001);
+	}
+	return oscCal;
+}
+//- -----------------------------------------------------------------------------------------------------------------------
 
 
 //- -----------------------------------------------------------------------------------------------------------------------

@@ -27,6 +27,8 @@ void PW::init(AS *ptrMain) {
 
 	pHM = ptrMain;																			// pointer to main class
 	pwrMode = POWER_MODE_NO_SLEEP;															// set default
+
+	stayAwake(5000);																		// startup means stay awake for next 7 seconds
 }
 
 /**
@@ -41,7 +43,6 @@ void PW::setMode(uint8_t mode) {
 
 	initWakeupPin();
 	setSleepMode();
-	stayAwake(10000);																		// startup means stay awake for next 10 seconds
 }
 
 /**
