@@ -9,7 +9,7 @@
 /*
  * Comment out to disable AES support
  */
-//#define SUPPORT_AES
+#define SUPPORT_AES
 
 /*
  * On device reset the watchdog hart reset the entire device.
@@ -70,9 +70,8 @@ void AS::init(void) {
 
 	initRandomSeed();
 
-	calibrateWatchdog();																		// calibrate the watchdog frequency (in relation to main clock)
-	dbg << F("wdt_cal: ") << wdt_cal_ms << F("\n");
-
+	cnl0Change();
+	
 	// everything is setuped, enable RF functionality
 }
 
@@ -634,6 +633,8 @@ void AS::preparePeerMessage(uint8_t *xPeer, uint8_t retries) {
 	sn.mBdy.mFlg.CFG   = 1;
 	sn.mBdy.mFlg.BIDI  = stcPeer.bidi;															// message flag
 	sn.mBdy.mFlg.BURST = l4_0x01.s.peerNeedsBurst;
+	sn.mBdy.mFlg.WKMEUP= 1;
+	pw.stayAwake(500);
 	
 	prepareToSend(sn.msgCnt, stcPeer.msg_type, xPeer);
 
@@ -841,6 +842,8 @@ void AS::processMessage(void) {
 		#endif
 
 	} else if  (rv.mBdy.mTyp == AS_MESSAGE_HAVE_DATA) {											// HAVE_DATA
+		sn.mBdy.mFlg.WKMEUP= 0;
+		sendACK();
 		// TODO: Make ready
 
 	} else if  (rv.mBdy.mTyp >= AS_MESSAGE_SWITCH_EVENT) {

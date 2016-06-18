@@ -74,10 +74,10 @@ void    setSleep(void) {
 
 void	calibrateWatchdog() {													// initMillis() must have been called yet
 	uint8_t sreg = SREG;														// remember interrupt state (sei / cli)
+	wdt_cal_ms = 0;
 	startWDG250ms();
 
 	uint16_t startMillis = getMillis();
-	wdt_cal_ms = 0;
 	wdt_int = 0;
 	wdt_reset();
 	sei();
@@ -87,6 +87,7 @@ void	calibrateWatchdog() {													// initMillis() must have been called yet
 	SREG = sreg;																// restore previous interrupt state
 	wdt_cal_ms = getMillis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
 	stopWDG();
+	dbg << F("wdt_cal: ") << wdt_cal_ms << F("\n");
 }
 void    startWDG() {
 	WDTCSR = (1<<WDIE);
