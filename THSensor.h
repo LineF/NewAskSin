@@ -32,14 +32,15 @@ class THSensor {
   protected://-------------------------------------------------------------------------------------------------------------
   private://---------------------------------------------------------------------------------------------------------------
 	struct s_lstCnl {
-		// List 0: 0x01, 0x05, 0x0A, 0x0B, 0x0C, 0x12, 0x14,
-		uint8_t	lst0[7];
+		// List 0: 0x01, 0x05, 0x0A, 0x0B, 0x0C, 0x12, 0x14, 0x23
+		uint8_t	lst0[8];
 	} lstCnl;
 
 	struct s_lstPeer {
-		// 0x01,
-		uint8_t  peerNeedsBurst;     // 0x01, s:0, e:1
-		uint8_t  tempCorr;
+		uint8_t  peerNeedsBurst:1;			// 0x01, s:0, e:1
+		uint8_t  useDHTTemp:1;				// 0x01, s:1, e:1
+		uint8_t  :6;
+		uint8_t  tempCorr;					// 0x02
 	} lstPeer;
 
   //- user defined functions ----------------------------------------------------------------------------------------------
