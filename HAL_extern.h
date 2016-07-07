@@ -278,13 +278,11 @@ void    switchExtBattMeasurement(uint8_t stat) {
 	if (stat == 1) {
 		SET_PIN_OUTPUT(BATT_ENABLE);					// set pin as out put
 		SET_PIN_LOW(BATT_ENABLE);						// set low to measure the resistor network
-		SET_PIN_LOW(BATT_MEASURE);
+		SET_PIN_LOW(BATT_MEASURE);						// switch off pull up to get correct measurement
 	}
 	else {
 		SET_PIN_INPUT(BATT_ENABLE);
-
-		// todo: check
-		SET_PIN_HIGH(BATT_MEASURE);					// switch on pull up, otherwise we waste energy over the resistor network against VCC
+		// SET_PIN_LOW(BATT_MEASURE);					// switch off pull up, otherwise we waste energy over the resistor network against V-BAT which is lower than VCC
 	}
 }
 //- -----------------------------------------------------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 //- with a lot of support from martin876 at FHEM forum
 //- -----------------------------------------------------------------------------------------------------------------------
 
-#define SN_DBG
+//#define SN_DBG
 #include "Send.h"
 #include "AS.h"
 

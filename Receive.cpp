@@ -6,7 +6,7 @@
 //- with a lot of support from martin876 at FHEM forum
 //- -----------------------------------------------------------------------------------------------------------------------
 
-#define RV_DBG
+//#define RV_DBG
 //#define RV_DBG_EX
 
 #include "Receive.h"

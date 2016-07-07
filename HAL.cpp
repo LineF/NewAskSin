@@ -58,6 +58,9 @@ void    setSleep(void) {
 
 	// some power savings by switching off some CPU functionality
 	ADCSRA = 0;																	// disable ADC
+	DIDR1 |= _BV(AIN0D) | _BV(AIN1D);											// switch off analog comparator input buffers
+	DIDR0 |= _BV(ADC0D) | _BV(ADC1D) | _BV(ADC2D) | _BV(ADC3D)
+		   | _BV(ADC4D) | _BV(ADC5D);											// switch off adc input buffers
 	backupPwrRegs();															// save content of power reduction register and set it to all off
 
 	sleep_enable();																// enable sleep
@@ -188,6 +191,7 @@ uint16_t getAdcValue(uint8_t adcmux) {
 	#endif
 
 	ADCSRA = 0;																	// ADC off
+	power_adc_disable();
 
 	//dbg << "x:" << adcValue << '\n';
 

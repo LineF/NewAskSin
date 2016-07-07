@@ -6,7 +6,7 @@
 //- with a lot of support from martin876 at FHEM forum
 //- -----------------------------------------------------------------------------------------------------------------------
 
-#define EE_DBG
+//#define EE_DBG
 //#define EE_DBG_TEST
 #include "EEprom.h"
 
