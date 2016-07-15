@@ -281,6 +281,7 @@ void AS::sendINFO_ACTUATOR_STATUS(uint8_t channel, uint8_t state, uint8_t flag) 
 	}
 
 	sn.mBdy.mFlg.BIDI = (isEmpty(MAID,3)) ? 0 : 1;
+	sn.mBdy.mFlg.WKMEUP= 1;
 	sn.mBdy.by10      = AS_INFO_ACTUATOR_STATUS;
 	sn.mBdy.by11      = channel;
 	sn.mBdy.pyLd[0]   = state;
@@ -634,7 +635,6 @@ void AS::preparePeerMessage(uint8_t *xPeer, uint8_t retries) {
 	sn.mBdy.mFlg.BIDI  = stcPeer.bidi;															// message flag
 	sn.mBdy.mFlg.BURST = l4_0x01.s.peerNeedsBurst;
 	sn.mBdy.mFlg.WKMEUP= 1;
-	pw.stayAwake(500);
 	
 	prepareToSend(sn.msgCnt, stcPeer.msg_type, xPeer);
 
@@ -844,7 +844,6 @@ void AS::processMessage(void) {
 	} else if  (rv.mBdy.mTyp == AS_MESSAGE_HAVE_DATA) {											// HAVE_DATA
 		sn.mBdy.mFlg.WKMEUP= 0;
 		sendACK();
-		// TODO: Make ready
 
 	} else if  (rv.mBdy.mTyp >= AS_MESSAGE_SWITCH_EVENT) {
 		/*
@@ -1373,6 +1372,7 @@ inline void AS::sendINFO_SERIAL(void) {
 inline void AS::sendINFO_PEER_LIST(uint8_t length) {
 	sn.mBdy.mLen = length + 10;
 	sn.mBdy.mFlg.BIDI = 1;
+	sn.mBdy.mFlg.WKMEUP= 1;
 	sn.mBdy.by10 = AS_INFO_PEER_LIST;															//stcSlice.cnl;
 	prepareToSend(stcSlice.mCnt++, AS_MESSAGE_INFO, stcSlice.toID);
 }
@@ -1389,6 +1389,7 @@ inline void AS::sendINFO_PEER_LIST(uint8_t length) {
 inline void AS::sendINFO_PARAM_RESPONSE_PAIRS(uint8_t length) {
 	sn.mBdy.mLen = length + 10;
 	sn.mBdy.mFlg.BIDI = 1;
+	sn.mBdy.mFlg.WKMEUP= 1;
 	sn.mBdy.by10 = (length < 3) ? AS_INFO_PARAM_RESPONSE_SEQ : AS_INFO_PARAM_RESPONSE_PAIRS;
 	prepareToSend(stcSlice.mCnt++, AS_MESSAGE_INFO, stcSlice.toID);
 }
