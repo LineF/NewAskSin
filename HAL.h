@@ -24,7 +24,6 @@
 
 	#include "macros.h"
 	#include "Print.h"
-
 	
 	//- MCU dependent HAL definitions -----------------------------------------------------------------------------------------
 	#if defined(__AVR_ATmega328P__)
