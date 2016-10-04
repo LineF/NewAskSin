@@ -30,6 +30,9 @@
 #include "AS.h"
 #include <avr/wdt.h>
 
+extern uint8_t transmitDevTryMax;
+
+
 #ifdef SUPPORT_AES
 	#include "aes.h"
 	aes128_ctx_t ctx; 																		// the context where the round keys are stored
@@ -924,7 +927,7 @@ inline void AS::sendPeerMsg(void) {
 	cmMaster *pCM = pcnlModule[stcPeer.channel];
 	uint8_t retries_max;
 
-	retries_max = (stcPeer.bidi) ? 3 : 1;
+	retries_max = (stcPeer.bidi) ? transmitDevTryMax : 1;
 	
 	if (snd_msg.active) return;																		// check if send function has a free slot, otherwise return
 	
