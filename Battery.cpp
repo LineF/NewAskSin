@@ -29,7 +29,7 @@ uint8_t BT::getStatus(void) {
 // private:		//---------------------------------------------------------------------------------------------------------
 BT::BT() {
 	#ifdef BT_DBG																			// only if ee debug is set
-	dbgStart();																				// serial setup
+	//dbgStart();																				// serial setup
 	dbg << F("BT.\n");																		// ...and some information
 	#endif
 

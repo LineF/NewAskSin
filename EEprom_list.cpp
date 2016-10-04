@@ -48,7 +48,7 @@ uint8_t EE_LIST::getList(uint8_t cnl, uint8_t lst, uint8_t peer_idx, uint8_t *bu
 	uint16_t pAddr = list->ee_addr + (list->len * peer_idx);								// calculate the appropiate address
 	getEEPromBlock(pAddr, list->len, buf);													// get the eeprom content
 
-	DBG(F("EE:getList cnl:"), list->cnl, F(", lst:"), list->lst, F(", idx:"), idx, F(", addr:"), pAddr, F(", data:"), _HEX(buf, list->len), '\n');
+	DBG( F("EE:getList cnl:"), list->cnl, F(", lst:"), list->lst, /*F(", idx:"), idx,*/ F(", addr:"), pAddr, F(", data:"), _HEX(buf, list->len), '\n');
 	return 1;																				// report everything ok
 }
 
@@ -78,7 +78,7 @@ uint8_t EE_LIST::getRegAddr(uint8_t cnl, uint8_t lst, uint8_t peer_idx, uint8_t 
 		}
 	}
 
-	DBG(F("EE:getRegAddr cnl:"), list->cnl, F(", lst:"), list->lst, F(", idx:"), peer_idx, F(", addr:"), pAddr, F(", reg:"), addr, F(", ret:"), retByte, '\n');
+	DBG( F("EE:getRegAddr cnl:"), list->cnl, F(", lst:"), list->lst, F(", idx:"), peer_idx, F(", addr:"), pAddr, F(", reg:"), addr, F(", ret:"), retByte, '\n');
 
 	return retByte;
 }
@@ -141,7 +141,7 @@ uint8_t EE_LIST::setList(uint8_t cnl, uint8_t lst, uint8_t peer_idx, uint8_t *bu
 	uint16_t pAddr = list->ee_addr + (list->len * peer_idx);								// calculate the appropiate address
 	setEEPromBlock(pAddr, list->len, buf);													// get the eeprom content
 
-	DBG(F("EE:setList cnl:"), list->cnl, F(", lst:"), list->lst, F(", idx:"), idx, F(", addr:"), pAddr, F(", data:"), _HEX(buf, list->len), '\n');
+	DBG( F("EE:setList cnl:"), list->cnl, F(", lst:"), list->lst, F(", idx:"), idx, F(", addr:"), pAddr, F(", data:"), _HEX(buf, list->len), '\n');
 	return 1;																				// report everything ok
 }
 
@@ -271,7 +271,7 @@ uint8_t  EE_LIST::getRegListSlc(uint8_t cnl, uint8_t lst, uint8_t idx, uint8_t s
 		//dbg << (i+eIdx+slcOffset) << '\n';
 	}
 
-	DBG(F("EE:getRegListSlc cnl:"), cnl, F(", lst:"), lst, F(", idx:"), idx, F(", slc:"), slc, F(", data:"), _HEX(buf, remByte * 2), '\n');
+	DBG( F("EE:getRegListSlc cnl:"), cnl, F(", lst:"), lst, F(", idx:"), idx, F(", slc:"), slc, F(", data:"), _HEX(buf, remByte * 2), '\n');
 	return remByte * 2;																	// return the byte length
 }
 

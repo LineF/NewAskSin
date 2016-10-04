@@ -20,11 +20,13 @@ waitTimer pwrTmr;																			// power timer functionality
 */
 PW::PW() {
 	#ifdef PW_DBG																			// only if ee debug is set
-	dbgStart();																				// serial setup
+	//dbgStart();																				// serial setup
 	dbg << F("PW.\n");																		// ...and some information
 	#endif
 
 	pwrMode = POWER_MODE_NO_SLEEP;															// set default
+
+//	stayAwake(5000);																		// startup means stay awake for next 5 seconds
 }
 
 /**

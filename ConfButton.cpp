@@ -23,7 +23,7 @@ void CB::config(uint8_t mode) {
 // private:		//---------------------------------------------------------------------------------------------------------
 CB::CB() {
 	#ifdef CB_DBG																			// only if ee debug is set
-	dbgStart();																				// serial setup
+	//dbgStart();																				// serial setup
 	dbg << F("CB.\n");																		// ...and some information
 	#endif
 }

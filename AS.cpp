@@ -24,6 +24,12 @@
 
 //#define AES_DBG
 
+#include "00_debug-flag.h"
+//#ifdef AS_DBG
+//#define DBG(...) Serial ,__VA_ARGS__
+//#else
+//#define DBG(...)
+//#endif
 
 
 
@@ -213,10 +219,8 @@ void AS::processMessage(void) {
 		else if (by11 == BY11(MSG_TYPE::CONFIG_SERIAL_REQ))     pCM->CONFIG_SERIAL_REQ();
 		else if (by11 == BY11(MSG_TYPE::CONFIG_PAIR_SERIAL))    pCM->CONFIG_PAIR_SERIAL();
 		else if (by11 == BY11(MSG_TYPE::CONFIG_STATUS_REQUEST)) pCM->CONFIG_STATUS_REQUEST();
-		else {
-			dbg << F("AS:message not known - please report: ") << _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1) << '\n';
-			DBG(AS, F("AS:message not known - please report: "), _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1), '\n');
-		}
+		else 
+			DBG(AS, F("message not known - please report: "), _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1), '\n');
 
 	} else if (rcv_msg.mBody->MSG_TYP == BY03(MSG_TYPE::ACK_MSG)) {
 
@@ -244,10 +248,8 @@ void AS::processMessage(void) {
 	} else if (rcv_msg.mBody->MSG_TYP == BY03(MSG_TYPE::POWER_EVENT_CYCLE)) {
 	} else if (rcv_msg.mBody->MSG_TYP == BY03(MSG_TYPE::POWER_EVENT)) {
 	} else if (rcv_msg.mBody->MSG_TYP == BY03(MSG_TYPE::WEATHER_EVENT)) {
-	} else {
-		dbg << F("AS:message not known - please report: ") << _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1) << '\n';
-		DBG(AS, F("AS:message not known - please report: "), _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1), '\n');
-	}
+	} else 
+		DBG(AS, F("message not known - please report: "), _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1), '\n');
 
 
 

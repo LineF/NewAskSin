@@ -17,7 +17,7 @@ waitTimer ledTmr;																				// config timer functionality
 // private:		//---------------------------------------------------------------------------------------------------------
 LD::LD() {
 	#ifdef LD_DBG																				// only if ee debug is set
-	dbgStart();																					// serial setup
+	//dbgStart();																					// serial setup
 	dbg << F("LD.\n");																			// ...and some information
 	#endif
 }
