@@ -304,6 +304,7 @@ extern AS hm;
 //- some helpers ----------------------------------------------------------------------------------------------------------
 uint32_t byteTimeCvt(uint8_t tTime);
 uint32_t intTimeCvt(uint16_t iTime);
+void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag);
 
 inline uint8_t  isEmpty(void *ptr, uint8_t len);										// check if a byte array is empty
 #define isEqual(p1,p2,len) memcmp(p1, p2, len)?0:1										// check if a byte array is equal

@@ -34,6 +34,7 @@
 
 
 #include "AS.h"
+#include "hardware.h"
 #include <avr/wdt.h>
 
 extern uint8_t transmitDevTryMax;
@@ -1923,4 +1924,10 @@ uint32_t intTimeCvt(uint16_t iTime) {
 	} else tByte = 1;
 
 	return (uint32_t)tByte*(iTime>>5)*100;
+}
+
+// callback function from pin change interrupt - called when config key is pressed
+void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag)
+{
+	pom.stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
 }
