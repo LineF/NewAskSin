@@ -155,7 +155,7 @@ void AS::poll(void) {
 	if (pair_mode.active) { 
 		if (pair_mode.timer.done()) {
 			pair_mode.active = 0;
-			isEmpty(MAID, 3)? led.set(pair_err) : led.set(pair_suc);	
+			!didConfig || isEmpty(MAID, 3)? led.set(pair_err) : led.set(pair_suc);	
 		}
 	}
 
@@ -539,6 +539,7 @@ void AS::sendDEVICE_INFO(void) {
 	prepareToSend(msgCount, AS_MESSAGE_DEVINFO, MAID);
 
 	pair_mode.active = 1;																		// set pairing flag
+	didConfig = 0;
 	pair_mode.timer.set(20000);															// set pairing time
 	led.set(pairing);																			// and visualize the status
 }
@@ -1375,7 +1376,11 @@ inline void AS::configEnd() {
 	if ( (config_mode.lst == 0) || (config_mode.lst == 1) ) {												// only list 0 or list 1 to load, while list 3 or list 4 are refreshed with a peer message
 		getEEPromBlock( pCM->lstC.ee_addr, pCM->lstC.len, pCM->lstC.val );						// get the respective eeprom block into the channel module array
 		pCM->info_config_change();																// and inform the module
+		pair_mode.timer.set(0);
+		didConfig = 1;
+		cnl0Change();
 	}
+	if (pair_mode.active) pair_mode.timer.set(0);																// finish pairing status
 }
 
 /**

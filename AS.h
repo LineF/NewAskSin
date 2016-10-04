@@ -90,6 +90,7 @@ public:		//---------------------------------------------------------------------
 		uint8_t	ui;
 	} l4_0x01;
 
+	uint8_t didConfig;
 
 	uint8_t  keyPartIndex = AS_STATUS_KEYCHANGE_INACTIVE;
 	uint8_t  signingRequestData[6];
