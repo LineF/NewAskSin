@@ -66,10 +66,13 @@ void SN::poll(void) {
 		snd_msg.retr_cnt++;																	// remember that we had send the message
 
 		if (snd_msg.mBody->FLAG.BIDI) snd_msg.timer.set(snd_msg.max_time);					// timeout is only needed while an ACK is requested
-		led.set(send);																		// fire the status led
-		pom.stayAwake(100);																	// and stay awake for a short while
-
-		DBG(SN, F("<- "), _HEX(snd_msg.buf, snd_msg.buf[0] + 1), ' ', _TIME, '\n');			// some debug
+		if (ee_list.getRegAddr(0, 0, 0, 5) & 0x40) {												// check if register ledMode == on
+			if (!led.active)
+				led.set(send);																// fire the status led
+		}
+		
+		DBG(SN, _HEX( snd_msg.buf, snd_msg.buf[0]+1), ' ', _TIME, '\n' );
+		pom.stayAwake(500);																	// stay awake for 1/2 sec since master may send a HAVE_DATA command
 
 	} else {
 		/* if we are here, message was send one or multiple times and the timeout was raised if an ack where required */
