@@ -139,7 +139,7 @@ public:		//---------------------------------------------------------------------
 	void sendSensorData(void);
 	void sendClimateEvent(void);
 	void sendSetTeamTemp(void);
-	void sendWeatherEvent(void);
+	void sendINFO_WEATHER_EVENT(uint8_t cnl, uint8_t burst, uint8_t *pL, uint8_t len);
 	void sendEvent(uint8_t channel, uint8_t msg_type, uint8_t msg_flag, uint8_t *ptr_payload, uint8_t len_payload);
 
 	void processMessageConfigAction(uint8_t by10, uint8_t cnl1);

@@ -873,12 +873,20 @@ void AS::sendSetTeamTemp(void) {
 	//mode     => '02,2,$val=(hex($val) & 0x3)',} },
 }
 
-void AS::sendWeatherEvent(void) {
-	//TODO: make ready#
-
+void AS::sendINFO_WEATHER_EVENT(uint8_t cnl, uint8_t burst, uint8_t *pL, uint8_t len) {
 	//"70"          => { txt => "WeatherEvent", params => {
 	//TEMP     => '00,4,$val=((hex($val)&0x3FFF)/10)*((hex($val)&0x4000)?-1:1)',
 	//HUM      => '04,2,$val=(hex($val))', } },
+
+	stcPeer.ptr_payload = pL;
+	stcPeer.len_payload = len;
+	stcPeer.channel = cnl;
+	stcPeer.burst = burst;
+	stcPeer.bidi = 0;																			// we don't need an ACK when sending weather events
+	stcPeer.msg_type = 0x70;
+	stcPeer.active = 1;
+	
+	// --------------------------------------------------------------------
 }
 
 // private:		//---------------------------------------------------------------------------------------------------------
