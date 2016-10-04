@@ -676,6 +676,7 @@ void AS::sendINFO_ACTUATOR_STATUS(uint8_t channel, uint8_t state, uint8_t flag) 
 	}
 
 	snd_msg.mBody->FLAG.BIDI = (isEmpty(MAID,3)) ? 0 : 1;
+	snd_msg.mBody->FLAG.WKMEUP = 1;
 	snd_msg.mBody->BY10 = AS_INFO_ACTUATOR_STATUS;
 	snd_msg.mBody->BY11 = channel;
 	snd_msg.mBody->PAYLOAD[0]   = state;
@@ -1031,6 +1032,7 @@ void AS::preparePeerMessage(uint8_t *xPeer, uint8_t retries) {
 	snd_msg.mBody->FLAG.CFG   = 1;
 	snd_msg.mBody->FLAG.BIDI  = stcPeer.bidi;															// message flag
 	snd_msg.mBody->FLAG.BURST = l4_0x01.s.peerNeedsBurst;
+	snd_msg.mBody->FLAG.WKMEUP= 1;
 	
 	prepareToSend(snd_msg.MSG_CNT, stcPeer.msg_type, xPeer);
 
@@ -1541,6 +1543,7 @@ inline void AS::sendINFO_SERIAL(void) {
 inline void AS::sendINFO_PEER_LIST(uint8_t length) {
 	snd_msg.mBody->MSG_LEN = length + 10;
 	snd_msg.mBody->FLAG.BIDI = 1;
+	snd_msg.mBody->FLAG.WKMEUP = 1;
 	snd_msg.mBody->BY10 = AS_INFO_PEER_LIST;															//stcSlice.cnl;
 	prepareToSend(stcSlice.mCnt++, AS_MESSAGE_INFO, stcSlice.toID);
 }
@@ -1557,6 +1560,7 @@ inline void AS::sendINFO_PEER_LIST(uint8_t length) {
 inline void AS::sendINFO_PARAM_RESPONSE_PAIRS(uint8_t length) {
 	snd_msg.mBody->MSG_LEN = length + 10;
 	snd_msg.mBody->FLAG.BIDI = 1;
+	snd_msg.mBody->FLAG.WKMEUP = 1;
 	snd_msg.mBody->BY10 = (length < 3) ? AS_INFO_PARAM_RESPONSE_SEQ : AS_INFO_PARAM_RESPONSE_PAIRS;
 	prepareToSend(stcSlice.mCnt++, AS_MESSAGE_INFO, stcSlice.toID);
 }
