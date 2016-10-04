@@ -14,10 +14,16 @@ BT bat;																						// declare battery status, defined in Battery.h
 waitTimer battTmr;																			// battery timer for duration check
 
 // public:		//---------------------------------------------------------------------------------------------------------
-void    BT::set(uint8_t tenthVolt, uint32_t duration) {
+void    BT::set(uint16_t centiVolt, uint32_t duration) {
 	bDuration = duration;
-	checkTenthVolt = tenthVolt;
+	checkCentiVolt = centiVolt;
 	poll();
+}
+uint16_t BT::getVolts(void) {
+	return measureCentiVolt;
+}
+uint8_t BT::getStatus(void) {
+	return bState;
 }
 
 // private:		//---------------------------------------------------------------------------------------------------------
@@ -34,15 +40,12 @@ BT::BT() {
 void    BT::poll(void) {
 	if (!battTmr.done() ) return;															// timer still running
 
-	measureTenthVolt = getBatteryVoltage();
-	bState = (measureTenthVolt < checkTenthVolt) ? 1 : 0;									// set the battery status
+	measureCentiVolt = getBatteryVoltage();
+	bState = (measureCentiVolt < checkCentiVolt) ? 1 : 0;									// set the battery status
 
 	#ifdef BT_DBG																			// only if ee debug is set
-	dbg << "cTV:" << checkTenthVolt << ", mTV:" << measureTenthVolt << " , s:" << bState << '\n';
+		dbg << "cTV:" << checkCentiVolt << ", mTV:" << measureCentiVolt << " , s:" << bState << '\n';
 	#endif
 
 	battTmr.set(bDuration);																	// set next check time
-}
-uint8_t BT::getStatus(void) {
-	return bState;
 }

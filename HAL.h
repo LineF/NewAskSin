@@ -182,7 +182,7 @@
 	#define BAT_DUMMY_NUM_MESS_ADC            40								// dummy measures to get the ADC working
 
 	extern uint16_t getAdcValue(uint8_t adcmux);
-	uint8_t  getBatteryVoltage(void);
+	uint16_t  getBatteryVoltage(void);
 	//- -----------------------------------------------------------------------------------------------------------------------
 
 #endif 

@@ -15,16 +15,18 @@
 class BT {
 public:		//---------------------------------------------------------------------------------------------------------
 
-	uint8_t  checkTenthVolt;												// holds the proof point
-	uint8_t  measureTenthVolt;												// variable to hold last measured value
+	uint8_t  checkCentiVolt;												// holds the proof point
+	uint8_t  measureCentiVolt;												// variable to hold last measured value
 	uint8_t  bState        :1;												// holds status bit
 	uint8_t  bMode         :2;												// mode variable
 	uint32_t bDuration;														// duration for the next check
 	
 	BT();
-	void    set(uint8_t tenthVolt, uint32_t duration);
-	void    poll(void);
+	void	set(uint16_t centiVolt, uint32_t duration);
+	uint16_t getVolts(void);
 	uint8_t getStatus(void);
+
+	void    poll(void);
 };
 
 extern BT bat;																// declaration in AS.cpp

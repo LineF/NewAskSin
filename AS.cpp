@@ -1023,12 +1023,12 @@ void AS::preparePeerMessage(uint8_t *xPeer, uint8_t retries) {
 
 	if (snd_msg.mBody->MSG_TYP == 0x41) {
 		snd_msg.mBody->BY10 = stcPeer.channel;
-		snd_msg.mBody->BY10 |= (bat.getStatus() << 7);													// battery bit
 		memcpy(snd_msg.buf+11, stcPeer.ptr_payload, stcPeer.len_payload);							// payload
 		snd_msg.mBody->MSG_LEN++;
 	} else {
 		memcpy(snd_msg.buf+10, stcPeer.ptr_payload, stcPeer.len_payload);							// payload
 	}
+	snd_msg.mBody->BY10 |= (bat.getStatus() << 7);													// battery bit
 	snd_msg.max_retr = retries;																		// send only one time
 }
 
