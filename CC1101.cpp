@@ -39,7 +39,7 @@ void    CC::init(void) {																// initialize CC1101
 
 	strobe(CC1101_SRES);																// send reset
 	_delay_ms(10);
-	pwr_down = 0;
+	pwr_down = 0;																		// remember active state
 
 	DBG(CC, '1');
 
@@ -70,7 +70,7 @@ void    CC::init(void) {																// initialize CC1101
 		CC1101_MDMCFG2,  0x03,
 		CC1101_DEVIATN,  0x34,						// 19.042969 kHz
 		CC1101_MCSM2,    0x01,
-		CC1101_MCSM1,    0x33,						// always go into IDLE
+		CC1101_MCSM1,    0x33,													// always go into RX after TX, CCA mode 3
 		CC1101_MCSM0,    0x18,
 		CC1101_FOCCFG,   0x16,
 		CC1101_AGCCTRL2, 0x43,
@@ -126,7 +126,7 @@ void    CC::sndData(uint8_t *buf, uint8_t burst) {										// send data packet 
 	//dbg << "tx\n";
 
 	if (burst) {																		// BURST-bit set?
-		strobe(CC1101_STX  );															// send a burst
+		strobe(CC1101_STX);																// send a burst
 		DBG(CC, F("CC:send burst\n"));													// some debug
 		_delay_ms(360);																	// according to ELV, devices get activated every 300ms, so send burst for 360ms
 	} else {
@@ -160,22 +160,22 @@ void    CC::sndData(uint8_t *buf, uint8_t burst) {										// send data packet 
 			break;
 		_delay_us(10);
 	}
-
 	// now transmitting data
-	for (uint16_t i = 0; i < 2000; i++) {												// after sending out all bytes the chip should go automatically in RX mode
-		if (readReg(CC1101_MARCSTATE, CC1101_STATUS) != MARCSTATE_TX)
+	for(uint16_t i = 0; i < 2000; i++) {												// after sending out all bytes the chip should go automatically in RX mode
+		if( readReg(CC1101_MARCSTATE, CC1101_STATUS) != MARCSTATE_TX)
 			break;																		// now in RX mode, good
 		_delay_us(10);
 	}
+
 
 	// back to receive
-	strobe(CC1101_SRX);																	// set RX mode again
-	for (uint8_t i = 0; i < 200; i++) {													// wait for reaching RX state
-		if (readReg(CC1101_MARCSTATE, CC1101_STATUS) == MARCSTATE_RX)
-			break;																		// now in RX mode, good
-		dbg << '.';
-		_delay_us(10);
-	}
+	//strobe(CC1101_SRX);																	// set RX mode again
+	//for (uint8_t i = 0; i < 200; i++) {													// wait for reaching RX state
+	//	if (readReg(CC1101_MARCSTATE, CC1101_STATUS) == MARCSTATE_RX)
+	//		break;																		// now in RX mode, good
+	//	dbg << '.';
+	//	_delay_us(10);
+	//}
 
 	DBG(CC, F("<c "), _HEX(buf, buf[0] + 1), _TIME, '\n');
 }
