@@ -67,7 +67,7 @@ void PW::poll(void) {
 	#ifdef PW_DBG																			// only if pw debug is set
 	dbg << '.';																				// ...and some information
 	_delay_ms(1);
-	uint32_t fTme = getMillis();
+	//uint32_t fTme = getMillis();
 	#endif
 
 
