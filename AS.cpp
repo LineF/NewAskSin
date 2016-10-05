@@ -939,7 +939,7 @@ inline void AS::sendPeerMsg(void) {
 	if (!stcPeer.idx_max) {
 		stcPeer.idx_max = pCM->peer.max;														// get amount of messages of peer channel
 
-		if (pCM->peer.used_slots() ) {															// check if at least one peer exist in db, otherwise send to master and stop function
+		if (!pCM->peer.used_slots() ) {															// check if at least one peer exist in db, otherwise send to master and stop function
 			preparePeerMessage(MAID, retries_max);
 			snd_msg.MSG_CNT++;																		// increase the send message counter
 			memset((void*)&stcPeer, 0, sizeof(s_stcPeer));										// clean out and return
