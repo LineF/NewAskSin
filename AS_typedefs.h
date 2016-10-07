@@ -120,6 +120,8 @@ typedef struct ts_list_table {
 	uint8_t* ptr_to_val(uint8_t reg_addr) {	
 		uint8_t empty = 0xff;
 		const void *pAddr =  memchr_P(reg, reg_addr, len);
+		DBG(AS, F("ptv: reg: "), _HEX((uint8_t*) reg, 2), F(", reg_addr: "), reg_addr, F(", len: "), len, F(", pAddr: "), _HEX((uint8_t *)pAddr, 2), F(", *pAddr: "), pAddr ? *(uint8_t*)pAddr : 255, '\n');
+		//DBG(AS, F("ptv: reg: "), _HEX((uint8_t*) reg, 2), '\n');
 		if (!pAddr) return &empty;
 		return val + (uint16_t)pAddr - (uint16_t)reg;
 	}
