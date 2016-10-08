@@ -72,7 +72,7 @@ void SN::poll(void) {
 				led.set(send);																// fire the status led
 		}
 		
-		DBG(SN, _HEX( snd_msg.buf, snd_msg.buf[0]+1), ' ', _TIME, '\n' );
+		DBG(SN, F("<- "), _HEX(snd_msg.buf, snd_msg.buf[0] + 1), ' ', _TIME, '\n');			// some debug
 		pom.stayAwake(500);																	// stay awake for 1/2 sec since master may send a HAVE_DATA command
 
 	} else {
