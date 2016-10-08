@@ -727,7 +727,7 @@ void AS::sendINFO_POWER_EVENT(uint8_t *data) {
 	//snd.mBdy.pyLd[1]   = flag; // | (bt.getStatus() << 7);
 	//snd.mBdy.pyLd[2]   = cc.rssi;
 	#ifdef AS_DBG
-		Serial << F(" BIDI: ") << snd_msg.mBody->FLAG.BIDI << "\n";
+		Serial << F(" BIDI: ") << snd_msg.mBody.FLAG.BIDI << "\n";
 	#endif
 	prepareToSend(cnt, AS_MESSAGE_POWER_EVENT_CYCLIC, MAID);
 }
@@ -1267,7 +1267,7 @@ inline void AS::processMessageConfigParamReq(void) {
 	stcSlice.reg2 = 1;																		// set the type of answer
 
 	#ifdef AS_DBG
-		dbg << "cnl: " << rcv_msg.mBody->BY10 << " s: " << stcSlice.idx << '\n';
+		dbg << "cnl: " << rcv_msg.mBody.BY10 << " s: " << stcSlice.idx << '\n';
 		dbg << "totSlc: " << stcSlice.totSlc << '\n';
 	#endif
 

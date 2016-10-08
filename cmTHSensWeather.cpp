@@ -148,7 +148,7 @@ uint32_t cmTHSensWeather::calcSendSlot(void) {
 	a[2] = dev_ident.HMID[0];
 	a[3] = 0;
 
-	uint32_t result = ((( *(uint32_t*)&a << 8) | (snd_msg.mBody->MSG_CNT)) * 1103515245 + 12345) >> 16;
+	uint32_t result = ((( *(uint32_t*)&a << 8) | (snd_msg.mBody.MSG_CNT)) * 1103515245 + 12345) >> 16;
 	result = (result & 0xFF) + 480;
 
 	return result;
