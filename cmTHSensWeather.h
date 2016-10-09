@@ -77,14 +77,13 @@ public:  //---------------------------------------------------------------------
 	virtual void message_trigger40(uint8_t msgLng, uint8_t msgCnt);							// same for peer messages
 	virtual void message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal);			// same for sensor messages
 
-	inline void sendStatus(void);															// help function to send status messages
-
 	virtual void request_peer_defaults(uint8_t idx, s_m01xx01 *buf);						// add peer channel defaults to list3/4
 	virtual void request_pair_status(void);													// event on status request
 
 	virtual void poll(void);																// poll function, driven by HM loop
 	virtual void set_toggle(void);															// toggle the module initiated by config button
 
+	inline void sendStatus(void);															// help function to send status messages
 };
 
 extern void initTH(uint8_t channel);														// functions in user sketch needed

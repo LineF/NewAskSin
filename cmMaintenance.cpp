@@ -51,6 +51,8 @@ void cmMaintenance::info_config_change(void) {
 	snd_msg.max_retr = 3;		//or set TRANSMIT_DEV_TRY_MAX
 	snd_msg.max_time = 300;
 
+	cnl0Change();																			// initialize with values from eeprom
+
 	DBG(MN, F("MN:config_change - MAID:"), _HEX(MAID,3), '\n' );
 
 }
