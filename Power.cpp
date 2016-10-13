@@ -107,12 +107,12 @@ void PW::poll(void) {
 
 	// start the respective watchdog timers
 	cli();
-	if      ((pwrMode == POWER_MODE_WAKEUP_ONRADIO) && (!chkCCBurst)) startWDG250ms();
-	else if ((pwrMode == POWER_MODE_WAKEUP_ONRADIO) && (chkCCBurst))  startWDG32ms();
-	else if  (pwrMode == POWER_MODE_WAKEUP_32MS)                      startWDG32ms();
-//	else if  (pwrMode == POWER_MODE_WAKEUP_64MS)                      startWDG64ms();
-	else if  (pwrMode == POWER_MODE_WAKEUP_250MS)                     startWDG250ms();
-	else if  (pwrMode == POWER_MODE_WAKEUP_8000MS)                    startWDG8000ms();
+	if      ((pwrMode == POWER_MODE_WAKEUP_ONRADIO) && (!chkCCBurst)) startTimer250ms();
+	else if ((pwrMode == POWER_MODE_WAKEUP_ONRADIO) && (chkCCBurst))  startTimer32ms();
+	else if  (pwrMode == POWER_MODE_WAKEUP_32MS)                      startTimer32ms();
+//	else if  (pwrMode == POWER_MODE_WAKEUP_64MS)                      startTimer64ms();
+	else if  (pwrMode == POWER_MODE_WAKEUP_250MS)                     startTimer250ms();
+	else if  (pwrMode == POWER_MODE_WAKEUP_8000MS)                    startTimer8000ms();
 
 	// todo: move sei() to setSleep() before sleep_cpu();
 	sei();
@@ -126,9 +126,13 @@ void PW::poll(void) {
 	/*************************
 	 * Wake up at this point *
 	 *************************/
+	#ifdef LOW_FREQ_OSC
+		startTimer1ms();
+	#else
 	if (pwrMode != POWER_MODE_WAKEUP_EXT_INT) {
 		stopWDG();																			// stop the watchdog
 	}
+	#endif
 
 	#ifdef PW_DBG																			// only if pw debug is set
 	dbg << ':';// << (getMillis() -fTme) << '\n';												// ...and some information
