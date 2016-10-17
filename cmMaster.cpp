@@ -106,6 +106,7 @@ uint16_t cm_prep_default(uint16_t ee_start_addr) {
 
 	for (uint8_t i = 0; i < cnl_max; i++) {												// step through all channels
 		cmMaster *pCM = ptr_CM[i];														// short hand to respective channel master	
+		DBG(CM, F("CM: cnlidx: "), i, F(", lstC.val: "), _HEX((uint8_t*)&pCM->lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&pCM->lstP.val, 2), '\n');
 		
 		pCM->list[pCM->lstC.lst] = &pCM->lstC;											// allign lstC to the list array
 		if (pCM->lstP.lst < 5) pCM->list[pCM->lstP.lst] = &pCM->lstP;					// because of the absence of lstP in channel0

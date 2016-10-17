@@ -484,7 +484,7 @@ void AS::processMessage(void) {
 	}
 	else if (rcv_msg.mBody.MSG_TYP == AS_MESSAGE_HAVE_DATA) {											// HAVE_DATA
 		snd_msg.mBody.FLAG.WKMEUP= 0;
-		sendACK();
+		send_ACK();
 
 	}
 	else if (rcv_msg.mBody.MSG_TYP >= AS_MESSAGE_SWITCH_EVENT) {
