@@ -41,9 +41,9 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 
 	initTH(lstC.cnl);																		// call external init function to set the output pins
 
-	uint16_t msgDelay = (rand() % 2000) + 1000;												// set message delay
-	msgTmr.set(msgDelay);																	// wait some time to settle the device
-	sendStat = INFO::SND_ACTUATOR_STATUS;													// send the initial status info
+	//uint16_t msgDelay = (rand() % 2000) + 1000;												// set message delay
+	//msgTmr.set(msgDelay);																	// wait some time to settle the device
+	//sendStat = INFO::SND_ACTUATOR_STATUS;													// send the initial status info
 
 	sensTmr.set(3000);																		// wait for first measurement being completed
 
@@ -103,11 +103,11 @@ void cmTHSensWeather::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t 
 void cmTHSensWeather::sendStatus(void) {
 
 	if (!sendStat) return;																	// nothing to do
-	if (!msgTmr.done()) return;																// not the right time
+	//if (!msgTmr.done()) return;																// not the right time
 	
 	// check which type has to be send
-	//if      ( sendStat == INFO::SND_ACK_STATUS )      hm.sendACK_STATUS(lstC.cnl, 0, 0);
-	//else if ( sendStat == INFO::SND_ACTUATOR_STATUS ) hm.sendINFO_ACTUATOR_STATUS(lstC.cnl, 0, 0);
+	if      ( sendStat == INFO::SND_ACK_STATUS )      hm.send_ACK_STATUS(lstC.cnl, 0, 0);
+	else if ( sendStat == INFO::SND_ACTUATOR_STATUS ) hm.sendINFO_ACTUATOR_STATUS(lstC.cnl, 0, 0);
 
 	sendStat = INFO::NOTHING;
 }
@@ -141,8 +141,8 @@ void cmTHSensWeather::request_pair_status(void) {
 	// we received a status request, appropriate answer is an InfoActuatorStatus message
 	DBG(TH, F("request_pair_status\n") );
 	
-	sendStat = INFO::SND_ACTUATOR_STATUS;													// send next time a info status message
-	msgTmr.set(10);																			// wait a short time to set status
+	//sendStat = INFO::SND_ACTUATOR_STATUS;													// send next time a info status message
+	//msgTmr.set(10);																			// wait a short time to set status
 }
 
 

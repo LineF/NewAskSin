@@ -41,10 +41,10 @@ void RV::poll(void) {
 
 	// filter out the footprint of MAX! devices
 	// b> 0F 04 86 10 38 EB 06 00 00 00 0A 24 B8 0C 00 40  (1963077)
-	if ((rcv_msg.mBody.MSG_LEN == 0x0f) && (*(uint8_t*)&rcv_msg.mBody.FLAG == 0x86) && (rcv_msg.intent == MSG_INTENT::BROADCAST)) {
-		rcv_msg.clear();
-		return;
-	}
+	//if ((rcv_msg.mBody.MSG_LEN == 0x0f) && (*(uint8_t*)&rcv_msg.mBody.FLAG == 0x86) && (rcv_msg.intent == MSG_INTENT::BROADCAST)) {
+	//	rcv_msg.clear();
+	//	return;
+	//}
 
 	DBG(RV, (char)rcv_msg.intent, F("> "), _HEX(rcv_msg.buf, rcv_msg.buf[0] + 1), ' ', _TIME, '\n');
 

@@ -66,7 +66,7 @@ public:  //---------------------------------------------------------------------
 		uint16_t	bat;
 	} sensVal;
 
-	waitTimer msgTmr;																		// message timer for sending status
+	//waitTimer msgTmr;																		// message timer for sending status
 	uint8_t	  sendStat;																		// indicator for sendStatus function
 
 	waitTimer sensTmr;																		// delay timer for sensor
