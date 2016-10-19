@@ -107,7 +107,7 @@ void cmTHSensWeather::sendStatus(void) {
 	
 	// check which type has to be send
 	if      ( sendStat == INFO::SND_ACK_STATUS )      hm.send_ACK_STATUS(lstC.cnl, 0, 0);
-	else if ( sendStat == INFO::SND_ACTUATOR_STATUS ) hm.sendINFO_ACTUATOR_STATUS(lstC.cnl, 0, 0);
+	else if ( sendStat == INFO::SND_ACTUATOR_STATUS ) hm.send_INFO_ACTUATOR_STATUS(lstC.cnl, 0, 0);
 
 	sendStat = INFO::NOTHING;
 }
