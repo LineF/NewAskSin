@@ -653,6 +653,8 @@ inline void AS::CONFIG_END(s_m01xx06 *buf) {
 	if (cm->cnl < 2) cm->list->load_list(cm->idx_peer);										// reload list0 or 1
 	if (cm->cnl < 2) ptr_CM[cm->cnl]->info_config_change();									// inform the channel module on a change of list0 or 1
 	// TODO: remove message id flag to config in send module
+	pair_mode.timer.set(0);																	// timeout pairing timer
+	didConfig = 1;
 	DBG(AS, F("AS:CONFIG_END, cnl:"), buf->MSG_CNL, '\n');
 }
 
@@ -745,8 +747,8 @@ void AS::send_DEVICE_INFO(MSG_REASON::E reason) {
 	/* BIDI is asked all time, will removed automatically if MAID is empty */
 	snd_msg.set_msg(MSG_TYPE::DEVICE_INFO, rcv_id, 1);
 
-	//pair_mode.active = 1;																	// set pairing flag
-	//pair_mode.timer.set(20000);															// set pairing time
+	pair_mode.active = 1;																	// set pairing flag
+	pair_mode.timer.set(20000);																// set pairing time
 	didConfig = 0;
 	led.set(pairing);																		// and visualize the status
 }
