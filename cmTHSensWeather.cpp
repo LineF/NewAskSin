@@ -37,7 +37,7 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 
 	l1 = (s_l1*)lstC.val;																	// set list structures to something useful
 	l4 = (s_lstPeer*)lstP.val;
-	DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
+	//DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
 
 	initTH(lstC.cnl);																		// call external init function to set the output pins
 
@@ -112,19 +112,18 @@ void cmTHSensWeather::sendStatus(void) {
 	sendStat = INFO::NOTHING;
 }
 
-void cmTHSensWeather::poll(void) {
+void cmTHSensWeather::cm_poll(void) {
 
 	//adjustStatus();																		// check if something is to be set on the Relay channel
-	sendStatus();																			// check if there is some status to send
+	//sendStatus();																			// check if there is some status to send
 
 	if (!sensTmr.done() ) return;															// step out while timer is still running
-	
 	sensTmr.set((calcSendSlot()*250 + 1000));												// set a new measurement time
 
 	measureTH(lstC.cnl, &sensVal);															// call the measurement function
-	DBG(TH, F("TH: tmp: "), _HEX((uint8_t *)&sensVal.temp, 2), F(", hum: "), sensVal.hum, F(", bat:"), _HEX((uint8_t *)&sensVal.bat, 2), F("\n"));
-	DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
-	DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
+	//DBG(TH, F("TH: tmp: "), _HEX((uint8_t *)&sensVal.temp, 2), F(", hum: "), sensVal.hum, F(", bat:"), _HEX((uint8_t *)&sensVal.bat, 2), F("\n"));
+	//DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
+	//DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
 	
 	hm.sendINFO_WEATHER_EVENT(lstC.cnl, 0, (uint8_t *)&sensVal, sizeof(sensVal));			// prepare the message and send, burst if burstRx register is set
 }

@@ -70,8 +70,7 @@ void SN::poll(void) {
 		snd_msg.retr_cnt++;																	// remember that we had send the message
 
 		if (snd_msg.mBody.FLAG.BIDI) snd_msg.timer.set(snd_msg.max_time);					// timeout is only needed while an ACK is requested
-		if (*ptr_CM[0]->list[0]->ptr_to_val(5 /*REG_CHN0_LED_MODE*/) & 0x40) {					// check if register ledMode == on
-		//if (ee_list.getRegAddr(0, 0, 0, 5) & 0x40) {										// check if register ledMode == on
+		if (*ptr_CM[0]->list[0]->ptr_to_val(5 /*REG_CHN0_LED_MODE*/) & 0x40) {				// check if register ledMode == on
 			if (!led.active)
 				led.set(send);																// fire the status led
 		}
