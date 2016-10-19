@@ -12,7 +12,6 @@
 
 
 uint8_t cnl_max = 0;																		// defined in cmMaster.h, increased by every instance which is initialized
-s_config_list_answer_slice config_list_answer_slice;										// defined in cmMaster.h, holds information to answer config list requests for peer or param lists
 
 
 //public://------------------------------------------------------------------------------------------------------------------
@@ -59,9 +58,6 @@ void cmMaster::info_peer_add(s_m01xx01 *buf) {
 void cmMaster::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
 	DBG(CM, F("CM:request_peer_defaults, idx:"), _HEXB(idx), F(", CNL_A:"), _HEXB(buf->PEER_CNL[0]), F(", CNL_B:"), _HEXB(buf->PEER_CNL[1]), '\n' );
 }
-void cmMaster::request_pair_status(void) {
-	DBG(CM, F("CM:pair_status\n") );
-}
 
 
 void cmMaster::poll(void) {
@@ -80,12 +76,56 @@ void cmMaster::set_toggle(void) {
 * @brief Received message handling forwarded by AS::processMessage
 */
 void cmMaster::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
-
+	DBG(CM, F("CM:CONFIG_STATUS_REQUEST\n"));
 }
 
+// need to define structs and the calls from AS.cpp
+void cmMaster::INSTRUCTION_INHIBIT_OFF() {
+}
+void cmMaster::INSTRUCTION_INHIBIT_ON() {
+}
+void cmMaster::INSTRUCTION_SET() {
+}
+void cmMaster::INSTRUCTION_STOP_CHANGE() {
+}
+void cmMaster::INSTRUCTION_LED() {
+}
+void cmMaster::INSTRUCTION_LED_ALL() {
+}
+void cmMaster::INSTRUCTION_LEVEL() {
+}
+void cmMaster::INSTRUCTION_SET_TEMP() {
+}
+void cmMaster::INSTRUCTION_ADAPTION_DRIVE_SET() {
+}
 
+void cmMaster::SWITCH() {
+}
+void cmMaster::TIMESTAMP() {
+}
+void cmMaster::REMOTE() {
+}
+void cmMaster::SENSOR_EVENT() {
+}
+void cmMaster::SWITCH_LEVEL() {
+}
+void cmMaster::SENSOR_DATA() {
+}
+void cmMaster::GAS_EVENT() {
+}
+void cmMaster::CLIMATE_EVENT() {
+}
+void cmMaster::SET_TEAM_TEMP() {
+}
+void cmMaster::THERMAL_CONTROL() {
+}
+void cmMaster::POWER_EVENT_CYCLE() {
+}
+void cmMaster::POWER_EVENT() {
+}
+void cmMaster::WEATHER_EVENT() {
+}
 
-//- send functions --------------------------------------------------------------------------------------------------------
 
 
 
