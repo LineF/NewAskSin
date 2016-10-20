@@ -268,6 +268,7 @@ void cmMaster::CONFIG_END(s_m01xx06 *buf) {
 		info_config_change();																// inform the channel module on a change of list0 or 1
 	}
 	// TODO: remove message id flag to config in send module
+	pair_mode.timer.set(0);																	// timeout pairing timer
 	DBG(CM, F("CM:CONFIG_END, cnl:"), buf->MSG_CNL, '\n');
 }
 /* 

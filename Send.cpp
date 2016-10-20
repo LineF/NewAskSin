@@ -29,7 +29,8 @@ void SN::poll(void) {
 	/* can only happen while an ack was received and AS:processMessage had send the retr_cnt to 0xff */
 	if (snd_msg.retr_cnt == 0xff) {
 		snd_msg.clear();																	// nothing to do any more
-		led.set(ack);																		// fire the status led
+		if (!led.active)
+			led.set(ack);																	// fire the status led
 		pom.stayAwake(100);																	// and stay awake for a short while
 		//DBG(SN, F("ACK detected...\n") );
 		return;

@@ -169,7 +169,7 @@ void AS::poll(void) {
 	if (pair_mode.active) { 
 		if (pair_mode.timer.done()) {
 			pair_mode.active = 0;
-			!didConfig || isEmpty(MAID, 3)? led.set(pair_err) : led.set(pair_suc);	
+			isEmpty(MAID, 3)? led.set(pair_err) : led.set(pair_suc);	
 		}
 	}
 
@@ -519,7 +519,6 @@ void AS::send_DEVICE_INFO(MSG_REASON::E reason) {
 
 	pair_mode.active = 1;																	// set pairing flag
 	pair_mode.timer.set(20000);																// set pairing time
-	didConfig = 0;
 	led.set(pairing);																		// and visualize the status
 }
 
