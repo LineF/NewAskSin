@@ -207,11 +207,11 @@ public:		//---------------------------------------------------------------------
 	void sendINFO_WEATHER_EVENT(uint8_t cnl, uint8_t burst, uint8_t *pL, uint8_t len);
 	void sendEvent(uint8_t channel, uint8_t msg_type, uint8_t msg_flag, uint8_t *ptr_payload, uint8_t len_payload);
 
-	void processMessageAction11();
-	void processMessageAction3E(uint8_t cnl, uint8_t pIdx);
+	//void processMessageAction11();
+	//void processMessageAction3E(uint8_t cnl, uint8_t pIdx);
 	void deviceReset(uint8_t clearEeprom);
 
-	uint8_t getChannelFromPeerDB(uint8_t *pIdx);
+	//uint8_t getChannelFromPeerDB(uint8_t *pIdx);
 
 	void initPseudoRandomNumberGenerator();
 
