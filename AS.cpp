@@ -293,7 +293,7 @@ void AS::processMessage(void) {
 	}
 
 	rcv_msg.clear();
-
+	//return;
 
 
 
@@ -501,7 +501,7 @@ void AS::processMessage(void) {
 					if (rcv_msg.mBody.BY10 == AS_ACTION_RESET && rcv_msg.mBody.BY11 == 0x00) {
 						channel = 1;
 					}
-					send_ACK_STATUS(channel, 0, 0);
+					//send_ACK_STATUS(channel, 0, 0);
 				}
 			}
 
@@ -559,7 +559,7 @@ void AS::processMessage(void) {
 
 	}
 
-	rcv_msg.clear();																	// nothing to do any more
+	//rcv_msg.clear();																	// nothing to do any more
 }
 
 
@@ -1554,6 +1554,13 @@ uint32_t byteTimeCvt(uint8_t tTime) {
 uint32_t intTimeCvt(uint16_t iTime) {
 	if (iTime == 0) return 0;
 
+	// take care of the byte order
+	#define LIT_ENDIAN ((1 >> 1 == 0) ? 1 : 0)
+	#if LIT_ENDIAN
+	iTime = (iTime >> 8) | (iTime << 8);
+	#endif
+
+	// process the conversation
 	uint8_t tByte;
 	if ((iTime & 0x1F) != 0) {
 		tByte = 2;

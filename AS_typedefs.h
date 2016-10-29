@@ -2177,6 +2177,7 @@ typedef struct ts_recv {
 */
 typedef struct ts_send {
 	uint8_t   active;					// flag that something is to process
+	uint8_t   pass_through;				// pass through string from console
 
 	union {
 		uint8_t buf[MaxDataLen];		// initial buffer for messages to send
@@ -2253,6 +2254,7 @@ typedef struct ts_send {
 		active = 0;
 		buf[0] = 0;
 		*(uint8_t*)&mBody.FLAG = 0;
+		pass_through = 0;
 		timeout = 0;
 		retr_cnt = 0;
 		temp_max_retr = 0;
