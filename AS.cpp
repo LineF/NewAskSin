@@ -70,7 +70,7 @@ void AS::init(void) {
 
 	initRandomSeed();
 
-	cnl0Change();
+	//cnl0Change();
 	
 	// everything is setuped, enable RF functionality
 }
@@ -586,7 +586,7 @@ inline void AS::sendPeerMsg(void) {
 	ee.getPeerByIdx(stcPeer.channel, stcPeer.idx_cur, tmp_peer);
 	
 	#ifdef AS_DBG
-		dbg << "a: " << stcPeer.idx_cur << " m " << stcPeer.idx_max << '\n';
+		//dbg << "a: " << stcPeer.idx_cur << " m " << stcPeer.idx_max << '\n';
 	#endif
 
 	if (isEmpty(tmp_peer,4)) {																	// if peer is 0, set done bit in slt and skip
@@ -604,8 +604,8 @@ inline void AS::sendPeerMsg(void) {
 	l4_0x01.ui = ee.getRegAddr(stcPeer.channel, 4, stcPeer.idx_cur, 0x01);
 	// fillLvlUpThr    =>{a=>  4.0,s=>1  ,l=>4,min=>0  ,max=>255     ,c=>''         ,f=>''      ,u=>''    ,d=>1,t=>"fill level upper threshold"},
 	// fillLvlLoThr    =>{a=>  5.0,s=>1  ,l=>4,min=>0  ,max=>255     ,c=>''         ,f=>''      ,u=>''    ,d=>1,t=>"fill level lower threshold"},
-	//dbg << F("s_l4_0x01=") << _HEXB(l4_0x01.ui) << F("\n");
-	//l4_0x01.ui = 0;		// disable burst - hardcoded
+	dbg << F("s_l4_0x01=") << _HEXB(l4_0x01.ui) << F("\n");
+	l4_0x01.ui = 0;		// disable burst - hardcoded
 	
 	preparePeerMessage(tmp_peer, 1);
 	
