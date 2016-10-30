@@ -35,12 +35,12 @@ uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not need
 
 void writeOCR2A(uint8_t val) {
 	OCR2A = val;
-	while (ASSR & (1<<OCR2AUB))
+	while (ASSR & _BV(OCR2AUB))
 		;
 }
 void writePRESC(uint8_t val) {
-	TCCR2B = TCCR2B & ~((1<<CS22)|(1<<CS21)|(1<<CS20)) | val;
-	while (ASSR & (1<<TCR2BUB))
+	TCCR2B = TCCR2B & ~(_BV(CS22)|_BV(CS21)|_BV(CS20)) | val;
+	while (ASSR & _BV(TCR2BUB))
 		;
 }
 void startTimer1ms(void) {
@@ -168,8 +168,8 @@ void    initMillis() {
 	SET_TCCRB();
 	REG_TIMSK = _BV(BIT_OCIE);
 #ifdef LOW_FREQ_OSC
-	REG_OCR = 0;																			// 32768 Hz / 32 (Prescaler) = 1024 Hz = interrupt freq
-	while (ASSR & (_BV(TCR2AUB) | _BV(TCR2BUB) | _BV(OCR2AUB)))
+	startTimer1ms();
+	while (ASSR & _BV(TCR2AUB))
 		;
 #else
 	REG_OCR = ((F_CPU / PRESCALER) / 1000) - 1;												// as of atmel docu: ocr should be one less than divider
