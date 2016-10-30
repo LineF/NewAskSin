@@ -80,7 +80,6 @@ void AS::init(void) {
 	uint16_t flashCRC = cm_calc_crc();														// calculate the crc of all channel module list0/1, list3/4
 	getEEPromBlock(0, sizeof(dev_ident), &dev_ident);										// get magic byte and all other information from eeprom
 	dbg << "fl: magic: " << flashCRC << ", " << dev_ident.MAGIC << '\n';
-	//dbg << "ee: magic: " << dev_ident.MAGIC << ", hmid: " << _HEX(dev_ident.HMID, 3) << ", serial: " << _HEX(dev_ident.SERIAL_NR, 10) << ", index: " << _HEXB(dev_ident.HMKEY_INDEX) << ", key: " << _HEX(dev_ident.HMKEY, 16) << ", sizeof: " << sizeof(dev_ident) << ", addr: " << (uint16_t)&dev_ident.MAGIC << '\n';
 	DBG(AS, F("AS:init crc- flash:"), flashCRC, F(", eeprom: "), dev_ident.MAGIC, '\n');	// some debug
 
 	if (flashCRC != dev_ident.MAGIC) {	
@@ -90,11 +89,11 @@ void AS::init(void) {
 		* order in HMSerialData[]                 * HMID *, * Serial number *, * Default-Key *, * Key-Index *   
 		* order in dev_ident struct   *	MAGIC *, * HMID[3] *, * SERIAL_NR[10] *, * HMKEY[16] *, * HMKEY_INDEX *
 		* we can copy the complete struct with a 2 byte offset in regards to the magic byte */
-		memcpy_P( dev_ident.HMID, HMSerialData, sizeof(dev_ident) - 2);						// copy from PROGMEM
+		memcpy_P( ((uint8_t*)&dev_ident)+2, HMSerialData, sizeof(dev_ident) - 2);						// copy from PROGMEM
 		dev_ident.MAGIC = flashCRC;															// set new magic number
 
 		//dbg << "fl: magic: " << dev_ident.MAGIC << ", hmid: " << _HEX(dev_ident.HMID, 3) << ", serial: " << _HEX(dev_ident.SERIAL_NR, 10) << ", index: " << _HEXB(dev_ident.HMKEY_INDEX) << ", key: " << _HEX(dev_ident.HMKEY, 16) << ", sizeof: " << sizeof(dev_ident) << ", addr: " << (uint16_t)&dev_ident << '\n';
-		setEEPromBlock(0, sizeof(dev_ident), &dev_ident.MAGIC);
+		setEEPromBlock(0, sizeof(dev_ident), &dev_ident);
 																									//setEEPromBlock(0, sizeof(dev_ident), &dev_ident);									// store defaults to EEprom
 		DBG(AS, F("AS:writing new magic byte\n") );											// some debug
 
@@ -133,6 +132,7 @@ void AS::init(void) {
 
 	/* - add this function in register.h to setup default values every start */
 	everyTimeStart();
+	dbg << "cnl_max:" << cnl_max << '\n';
 }
 
 /**
@@ -209,17 +209,20 @@ void AS::processMessage(void) {
 	} else if (rcv_msg.mBody.MSG_TYP == BY03(MSG_TYPE::CONFIG_REQ)) {
 		/* config request messages are used to configure a devive by writing registers and peers -
 		*  check the channel and forward for processing to the respective function */
+		if (rcv_msg.mBody.BY10 >= cnl_max) return;											// channel is out of range, return
 
 		uint8_t by11 = rcv_msg.mBody.BY11;													// short hand to byte 11 in the received string
 		pCM = ptr_CM[rcv_msg.mBody.BY10];													// short hand to the respective channel module instance
+		s_config_mode *cm = &config_mode;													// short hand to config mode struct
+
 		if      (by11 == BY11(MSG_TYPE::CONFIG_PEER_ADD))       pCM->CONFIG_PEER_ADD(&rcv_msg.m01xx01);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_PEER_REMOVE))    pCM->CONFIG_PEER_REMOVE(&rcv_msg.m01xx02);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_PEER_LIST_REQ))  pCM->CONFIG_PEER_LIST_REQ(&rcv_msg.m01xx03);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_PARAM_REQ))      pCM->CONFIG_PARAM_REQ(&rcv_msg.m01xx04);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_START))          pCM->CONFIG_START(&rcv_msg.m01xx05);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_END))            pCM->CONFIG_END(&rcv_msg.m01xx06);
-		else if (by11 == BY11(MSG_TYPE::CONFIG_WRITE_INDEX1))   pCM->CONFIG_WRITE_INDEX1(&rcv_msg.m01xx07);
-		else if (by11 == BY11(MSG_TYPE::CONFIG_WRITE_INDEX2))   pCM->CONFIG_WRITE_INDEX2(&rcv_msg.m01xx08);
+		else if (by11 == BY11(MSG_TYPE::CONFIG_WRITE_INDEX1))   ptr_CM[cm->list->cnl]->CONFIG_WRITE_INDEX1(&rcv_msg.m01xx07);
+		else if (by11 == BY11(MSG_TYPE::CONFIG_WRITE_INDEX2))   ptr_CM[cm->list->cnl]->CONFIG_WRITE_INDEX2(&rcv_msg.m01xx08);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_SERIAL_REQ))     pCM->CONFIG_SERIAL_REQ(&rcv_msg.m01xx09);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_PAIR_SERIAL))    pCM->CONFIG_PAIR_SERIAL(&rcv_msg.m01xx0a);
 		else if (by11 == BY11(MSG_TYPE::CONFIG_STATUS_REQUEST)) pCM->CONFIG_STATUS_REQUEST(&rcv_msg.m01xx0e);
@@ -246,16 +249,16 @@ void AS::processMessage(void) {
 
 		/* everything below is channel related */
 		pCM = ptr_CM[rcv_msg.mBody.BY11];													// short hand to respective channel module instance
-		if      (by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_OFF)) pCM->INSTRUCTION_INHIBIT_OFF(&rcv_msg.m1100xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_ON))  pCM->INSTRUCTION_INHIBIT_ON(&rcv_msg.m1101xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SET))         pCM->INSTRUCTION_SET(&rcv_msg.m1102xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_STOP_CHANGE)) pCM->INSTRUCTION_STOP_CHANGE(&rcv_msg.m1103xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_RESET))       pCM->INSTRUCTION_RESET(&rcv_msg.m1104xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LED))         pCM->INSTRUCTION_LED(&rcv_msg.m1180xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LED_ALL))     pCM->INSTRUCTION_LED_ALL(&rcv_msg.m1181xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LEVEL))       pCM->INSTRUCTION_LEVEL(&rcv_msg.m1181xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SLEEPMODE))   pCM->INSTRUCTION_SLEEPMODE(&rcv_msg.m1182xx);
-		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SET_TEMP))    pCM->INSTRUCTION_SET_TEMP(&rcv_msg.m1186xx);
+		if      (by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_OFF))        pCM->INSTRUCTION_INHIBIT_OFF(&rcv_msg.m1100xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_ON))         pCM->INSTRUCTION_INHIBIT_ON(&rcv_msg.m1101xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SET))                pCM->INSTRUCTION_SET(&rcv_msg.m1102xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_STOP_CHANGE))        pCM->INSTRUCTION_STOP_CHANGE(&rcv_msg.m1103xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_RESET))              pCM->INSTRUCTION_RESET(&rcv_msg.m1104xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LED))                pCM->INSTRUCTION_LED(&rcv_msg.m1180xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LED_ALL))            pCM->INSTRUCTION_LED_ALL(&rcv_msg.m1181xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_LEVEL))              pCM->INSTRUCTION_LEVEL(&rcv_msg.m1181xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SLEEPMODE))          pCM->INSTRUCTION_SLEEPMODE(&rcv_msg.m1182xx);
+		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SET_TEMP))           pCM->INSTRUCTION_SET_TEMP(&rcv_msg.m1186xx);
 
 	} else if (rcv_msg.mBody.MSG_TYP == BY03(MSG_TYPE::HAVE_DATA)) {
 
@@ -561,7 +564,6 @@ void AS::processMessage(void) {
 
 	//rcv_msg.clear();																	// nothing to do any more
 }
-
 
 
 
