@@ -16,7 +16,7 @@ SN snd;																						// declare send module, defined in send.h
 
 
 SN::SN()  {
-	DBG_START(SN, F("SN.\n") );																// ...some debug
+	DBG(SN, F("SN.\n") );																// ...some debug
 }
 
 void SN::poll(void) {
@@ -109,7 +109,7 @@ void SN::process_config_list_answer_slice(void) {
 		/* process the INFO_PEER_LIST */
 		payload_len = cl->peer->get_slice(cl->cur_slc, snd_msg.buf + 11);					// get the slice and the amount of bytes
 		snd_msg.mBody.MSG_CNT = snd_msg.MSG_CNT++;											// set the message counter
-		snd_msg.set_msg(MSG_TYPE::INFO_PEER_LIST, MAID, 1, payload_len + 10);				// set message type, RCV_ID, SND_ID and set it active
+		snd_msg.set_msg(MSG_TYPE::INFO_PEER_LIST, dev_operate.MAID, 1, payload_len + 10);	// set message type, RCV_ID, SND_ID and set it active
 		//DBG(SN, F("SN:LIST_ANSWER::PEER_LIST cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
 		cl->cur_slc++;																		// increase slice counter
 
@@ -122,7 +122,7 @@ void SN::process_config_list_answer_slice(void) {
 			memset(snd_msg.buf + 11, 0, payload_len);										// write terminating zeros
 		}
 		snd_msg.mBody.MSG_CNT = snd_msg.MSG_CNT++;											// set the message counter
-		snd_msg.set_msg(MSG_TYPE::INFO_PARAM_RESPONSE_PAIRS, MAID, 1, payload_len + 10);	// set message type, RCV_ID, SND_ID and set it active
+		snd_msg.set_msg(MSG_TYPE::INFO_PARAM_RESPONSE_PAIRS, dev_operate.MAID, 1, payload_len + 10);// set message type, RCV_ID, SND_ID and set it active
 		//DBG(SN, F("SN:LIST_ANSWER::PARAM_RESPONSE_PAIRS cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
 		cl->cur_slc++;																		// increase slice counter
 
