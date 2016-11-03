@@ -10,6 +10,7 @@
 #include "Battery.h"
 #include "AS.h"
 
+BT bat;																						// declare battery status, defined in Battery.h
 waitTimer battTmr;																			// battery timer for duration check
 
 // public:		//---------------------------------------------------------------------------------------------------------
@@ -27,18 +28,15 @@ uint8_t BT::getStatus(void) {
 
 // private:		//---------------------------------------------------------------------------------------------------------
 BT::BT() {
-} 
-void    BT::init(AS *ptrMain) {
-	
 	#ifdef BT_DBG																			// only if ee debug is set
-		dbgStart();																				// serial setup
-		dbg << F("BT.\n");																		// ...and some information
+	//dbgStart();																				// serial setup
+	dbg << F("BT.\n");																		// ...and some information
 	#endif
 
-	pHM = ptrMain;
 	bMode = 0;
 	bDuration = 0;
 }
+
 void    BT::poll(void) {
 	if (!battTmr.done() ) return;															// timer still running
 

@@ -8,6 +8,7 @@
 
 #ifndef _CM_BLIND_H
 #define _CM_BLIND_H
+#define CLASS_NAME cmBlind
 
 #include "AS.h"
 #include "HAL.h"
@@ -219,7 +220,7 @@ class cmBlind {
 	uint8_t  modState;																		// module status byte, needed for list3 modules to answer status requests
 	uint8_t  regCnl;																		// holds the channel for the module
 
-	AS       *hm;																			// pointer to HM class instance
+	//AS       *hm;																			// pointer to HM class instance
 
 	inline void     setToggle(void);																// toggle the module initiated by config button
 	void     configCngEvent(void);															// list1 on registered channel had changed

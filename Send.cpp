@@ -1,131 +1,144 @@
-//- -----------------------------------------------------------------------------------------------------------------------
-// AskSin driver implementation
-// 2013-08-03 <trilu@gmx.de> Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
-//- -----------------------------------------------------------------------------------------------------------------------
-//- AskSin send function --------------------------------------------------------------------------------------------------
-//- with a lot of support from martin876 at FHEM forum
-//- -----------------------------------------------------------------------------------------------------------------------
+/*- -----------------------------------------------------------------------------------------------------------------------
+*  AskSin driver implementation
+*  2013-08-03 <trilu@gmx.de> Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
+* - -----------------------------------------------------------------------------------------------------------------------
+* - AskSin send function --------------------------------------------------------------------------------------------------
+* - with some support from martin876 at FHEM forum, AES implementation from Dirk
+* - -----------------------------------------------------------------------------------------------------------------------
+*/
 
-//#define SN_DBG
-#include "Send.h"
+#include "00_debug-flag.h"
 #include "AS.h"
+#include "Send.h"
 
-waitTimer sndTmr;																			// send timer functionality
 
-SN::SN() {}
+SN snd;																						// declare send module, defined in send.h
 
-void SN::init(AS *ptrMain) {
-	#ifdef SN_DBG																			// only if ee debug is set
-		dbgStart();																			// serial setup
-		dbg << F("SN.\n");																	// ...and some information
-	#endif
 
-	pHM = ptrMain;
-	buf = (uint8_t*)&mBdy;
+SN::SN()  {
+	DBG(SN, F("SN.\n") );																// ...some debug
 }
 
 void SN::poll(void) {
-	#define maxRetries    3
-	#define maxTime       300
-	
-	// set right amount of retries
-	if (!this->maxRetr) {																	// first time run, check message type and set retries
-		if (reqACK) {
-			this->maxRetr = maxRetries;														// if BIDI is set, we have three retries
-		} else {
-			this->maxRetr = 1;
-		}
-	}
-	
-	//dbg << "x:" << this->retrCnt << " y:" << this->maxRetr << " t:" << sndTmr.done() << '\n';
-	
-	// send something while timer is not busy with waiting for an answer and max tries are not done 
-	if ((this->retrCnt < this->maxRetr) && (sndTmr.done() )) {								// not all sends done and timing is OK
+	process_config_list_answer_slice();														// check if something has to be send slice wise
+	if (!snd_msg.active) return;															// nothing to do
 
-		// some sanity
-		this->mBdy.mFlg.RPTEN = 1;															// every message need this flag
-		//if (pHM->cFlag.active) this->mBdy.mFlg.CFG = pHM->cFlag.active;					// set the respective flag while we are in config mode
-		this->timeOut = 0;																	// not timed out because just started
-		this->lastMsgCnt = this->mBdy.mCnt;													// copy the message count to identify the ACK
-		this->retrCnt++;																	// increase counter while send out
+	/*  return while no ACK received and timer is running */
+	if ((!snd_msg.timer.done()) && (snd_msg.retr_cnt != 0xff)) return;						
 
-		// check if we should send an internal message
-		if (!memcmp(this->mBdy.toID, HMID, 3)) {
-			memcpy(pHM->rv.buf, this->buf, sndLen);											// copy send buffer to received buffer
-			this->retrCnt = 0xFF;															// ACK not required, because internal
-						
-			#ifdef SN_DBG																	// only if AS debug is set
-				dbg << F("<i ");
-			#endif
-
-		} else {																			// send it external
-			uint8_t tBurst = this->mBdy.mFlg.BURST;											// get burst flag, while string will get encoded
-
-			/*
-			 * Copy the complete message to msgToSign. We need them for later AES signing.
-			 * We need copy the message to position after 5 of the buffer.
-			 * The bytes 0-5 remain free. These 5 bytes and the first byte of the copied message
-			 * will fill with 6 bytes random data later.
-			 */
-			memcpy(this->msgToSign+5, this->buf, (sndLen > 27) ? 27 : sndLen);
-
-			pHM->encode(this->buf);															// encode the string
-
-			pHM->cc.sndData(this->buf, tBurst);												// send to communication module
-
-			pHM->decode(this->buf);															// decode the string, so it is readable next time
-			
-			if (reqACK) {
-				sndTmr.set(maxTime);														// set the time out for the message
-			}
-			
-			#ifdef SN_DBG																	// only if AS debug is set
-				dbg << F("<- ");
-			#endif
-		}
-		
-		if (pHM->ee.getRegAddr(0, 0, 0, 5) & 0x40) {										// check if register ledMode == on
-			if (!pHM->ld.active)
-				pHM->ld.set(send);															// fire the status led
-		}
-		
-		pHM->pw.stayAwake(500);																// stay awake for 1/2 sec since master may send a HAVE_DATA command
-		
-		#ifdef SN_DBG																		// only if AS debug is set
-			dbg << _HEX(this->buf, sndLen) << ' ' << _TIME << '\n';
-		#endif
-
-	} else if ((this->retrCnt >= this->maxRetr) && (sndTmr.done() )) {						// max retries achieved, but seems to have no answer
-		this->retrCnt = 0;
-		this->maxRetr = 0;
-		this->active = 0;
-
-		if (!reqACK) {
-			return;
-		}
-		
-		this->timeOut = 1;																	// set the time out only while an ACK or answer was requested
-		pHM->pw.stayAwake(100);
-		pHM->ld.set(noack);
-		
-		#ifdef SN_DBG																		// only if AS debug is set
-			dbg << F("  timed out") << ' ' << _TIME << '\n';
-		#endif
+	/* can only happen while an ack was received and AS:processMessage had send the retr_cnt to 0xff */
+	if (snd_msg.retr_cnt == 0xff) {
+		snd_msg.clear();																	// nothing to do any more
+		if (!led.active)
+			led.set(ack);																	// fire the status led
+		pom.stayAwake(100);																	// and stay awake for a short while
+		//DBG(SN, F("ACK detected...\n") );
+		return;
 	}
 
-	if (this->retrCnt == 0xFF) {															// answer was received, clean up the structure
-//		dbg << F(">>> clear timer") << _TIME << "\n";
+	/* check for first time and prepare the send */
+	if (!snd_msg.retr_cnt) {
 
-		this->cleanUp();
-		pHM->pw.stayAwake(100);
-		if (!pHM->ld.active) pHM->ld.set(ack);												// fire the status led
+		/* check if we should send an internal message */
+		if (isEqual(snd_msg.mBody.RCV_ID, dev_ident.HMID, 3)) {
+			memcpy(rcv_msg.buf, snd_msg.buf, snd_msg.buf[0] + 1);							// copy send buffer to received buffer
+			DBG(SN, F("<i ...\n"));															// some debug, message is shown in the received string
+			rcv.poll();																		// get intent and so on...
+			snd_msg.clear();																// nothing to do any more for send, msg will processed in the receive loop
+			return;																			// and return...
+		}
+
+		/* internal messages doesn't matter anymore*/
+		if (snd_msg.active != 2) memcpy(snd_msg.mBody.SND_ID, dev_ident.HMID, 3);			// we always send the message in our name
+		snd_msg.mBody.FLAG.RPTEN = 1;														// every message need this flag
+		snd_msg.temp_MSG_CNT = snd_msg.mBody.MSG_CNT;										// copy the message count to identify the ACK
+		if (isEmpty(snd_msg.mBody.RCV_ID,3)) snd_msg.mBody.FLAG.BIDI = 0;					// broadcast, no ack required
+
+		if (!snd_msg.temp_max_retr)
+			snd_msg.temp_max_retr = (snd_msg.mBody.FLAG.BIDI) ? snd_msg.max_retr : 1;		// send once while not requesting an ACK
+
+		/* Copy the complete message to msgToSign. We need them for later AES signing.
+		*  We need copy the message to position after 5 of the buffer.
+		*  The bytes 0-5 remain free. These 5 bytes and the first byte of the copied message
+		*  will fill with 6 bytes random data later.	*/
+		memcpy(&snd_msg.prev_buf[5], snd_msg.buf, (snd_msg.buf[0] > 26) ? 27 : snd_msg.buf[0] + 1);
+	}
+	
+	/* check the retr count if there is something to send, while message timer was checked earlier */
+	if (snd_msg.retr_cnt < snd_msg.temp_max_retr)  {										// not all sends done and timing is OK
+		uint8_t tBurst = snd_msg.mBody.FLAG.BURST;											// get burst flag, while string will get encoded
+		cc.sndData(snd_msg.buf, tBurst);													// send to communication module
+		snd_msg.retr_cnt++;																	// remember that we had send the message
+
+		if (snd_msg.mBody.FLAG.BIDI) snd_msg.timer.set(snd_msg.max_time);					// timeout is only needed while an ACK is requested
+		if (*ptr_CM[0]->list[0]->ptr_to_val(5 /*REG_CHN0_LED_MODE*/) & 0x40) {				// check if register ledMode == on
+			if (!led.active)
+				led.set(send);																// fire the status led
+		}
+		
+		DBG(SN, F("<- "), _HEX(snd_msg.buf, snd_msg.buf[0] + 1), ' ', _TIME, '\n');			// some debug
+		pom.stayAwake(500);																	// stay awake for 1/2 sec since master may send a HAVE_DATA command
+
+	} else {
+		/* if we are here, message was send one or multiple times and the timeout was raised if an ack where required */
+		/* seems, nobody had got our message, other wise we had received an ACK */
+		snd_msg.clear();
+		if (!snd_msg.mBody.FLAG.BIDI) return;												// everything fine, ACK was not required
+
+		snd_msg.timeout = 1;																// set the time out only while an ACK or answer was requested
+
+		led.set(noack);																		// fire the status led
+		pom.stayAwake(100);																	// and stay awake for a short while
+
+		DBG(SN, F("  timed out"), ' ', _TIME, '\n');										// some debug
+	}
+
+	
+}
+
+void SN::process_config_list_answer_slice(void) {
+	s_config_list_answer_slice *cl = &config_list_answer_slice;								// short hand
+
+	if (!cl->active) return;																// nothing to send, return
+	if (!cl->timer.done()) return;															// something to send but we have to wait
+	if (snd_msg.active) return;																// we have something to do, but send_msg is busy
+
+	uint8_t payload_len;
+
+	if (cl->type == LIST_ANSWER::PEER_LIST) {
+		/* process the INFO_PEER_LIST */
+		payload_len = cl->peer->get_slice(cl->cur_slc, snd_msg.buf + 11);					// get the slice and the amount of bytes
+		snd_msg.mBody.MSG_CNT = snd_msg.MSG_CNT++;											// set the message counter
+		snd_msg.set_msg(MSG_TYPE::INFO_PEER_LIST, dev_operate.MAID, 1, payload_len + 10);	// set message type, RCV_ID, SND_ID and set it active
+		//DBG(SN, F("SN:LIST_ANSWER::PEER_LIST cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
+		cl->cur_slc++;																		// increase slice counter
+
+	} else if (cl->type == LIST_ANSWER::PARAM_RESPONSE_PAIRS) {
+		/* process the INFO_PARAM_RESPONSE_PAIRS */
+		if ((cl->cur_slc + 1) < cl->max_slc) {												// within message processing, get the content													
+			payload_len = cl->list->get_slice_pairs(cl->peer_idx, cl->cur_slc, snd_msg.buf + 11);// get the slice and the amount of bytes
+		} else {																			// last slice, terminating message
+			payload_len = 2;																// reflect it in the payload_len
+			memset(snd_msg.buf + 11, 0, payload_len);										// write terminating zeros
+		}
+		snd_msg.mBody.MSG_CNT = snd_msg.MSG_CNT++;											// set the message counter
+		snd_msg.set_msg(MSG_TYPE::INFO_PARAM_RESPONSE_PAIRS, dev_operate.MAID, 1, payload_len + 10);// set message type, RCV_ID, SND_ID and set it active
+		//DBG(SN, F("SN:LIST_ANSWER::PARAM_RESPONSE_PAIRS cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
+		cl->cur_slc++;																		// increase slice counter
+
+	} else if (cl->type == LIST_ANSWER::PARAM_RESPONSE_SEQ) {
+		/* process the INFO_PARAM_RESPONSE_SEQ 
+		* not implemented yet */
+	}
+
+	if (cl->cur_slc >= cl->max_slc) {														// if everything is send, we could stop the struct
+		//DBG(SN, F("SN:LIST_ANSWER::DONE cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
+		cl->active = 0;
+		cl->cur_slc = 0;
 	}
 }
 
-void SN::cleanUp(void) {
-	this->timeOut = 0;
-	this->retrCnt = 0;
-	this->maxRetr = 0;
-	this->active = 0;
-	sndTmr.set(0);
-}
+
+
+
+

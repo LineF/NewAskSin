@@ -7,31 +7,20 @@
 
 //#define LD_DBG
 #include "StatusLed.h"
-#include "AS.h"
+#include "wait_timer.h"
 
+LD led;																							// declare status led, defines in StatusLed.h
 waitTimer ledTmr;																				// config timer functionality
 
 // public:		//---------------------------------------------------------------------------------------------------------
 
 // private:		//---------------------------------------------------------------------------------------------------------
-LD::LD() {} 
-
-/**
-* @brief Init function for the led class. Normally called directly from AskSin class.
-* In this case the init is only the handover of a pointer to the main class, some debug message if enabled 
-* and the trigger for the hardware initialization.
-* @param   *ptrMain   The pointer to the main class 
-*/
-void    LD::init(AS *ptrMain) {
-	
+LD::LD() {
 	#ifdef LD_DBG																				// only if ee debug is set
-	dbgStart();																					// serial setup
+	//dbgStart();																					// serial setup
 	dbg << F("LD.\n");																			// ...and some information
 	#endif
-
-//	pHM = ptrMain;																				// store the pointer to the main class
-	initLeds();																					// init the hardware, defined in hardware.h
-} 
+}
 
 /**
 * @brief Here we are choosing and start the blink pattern. Processing is done via the poll function within 

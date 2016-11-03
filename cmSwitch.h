@@ -1,167 +1,145 @@
-//- -----------------------------------------------------------------------------------------------------------------------
-// AskSin driver implementation
-// 2013-08-03 <trilu@gmx.de> Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
-//- -----------------------------------------------------------------------------------------------------------------------
-//- AskSin relay class ----------------------------------------------------------------------------------------------------
-//- with a lot of support from martin876 at FHEM forum
-//- -----------------------------------------------------------------------------------------------------------------------
+/**
+*  AskSin driver implementation
+*  2013-08-03 <trilu@gmx.de> Creative Commons - http://creativecommons.org/licenses/by-nc-sa/3.0/de/
+* - -----------------------------------------------------------------------------------------------------------------------
+* - AskSin channel module Switch ------------------------------------------------------------------------------------------
+* - -----------------------------------------------------------------------------------------------------------------------
+*/
 
 #ifndef _cmSwitch_H
 #define _cmSwitch_H
 
-#include "AS.h"
-#include "HAL.h"
+#include "cmMaster.h"
 
-// default settings for list3 or list4
-const uint8_t peerOdd[] =    {		// cnl 2, 4, 6
-	// Default actor dual 1: 02:00 03:00 04:32 05:64 06:00 07:FF 08:00 09:FF 0A:01
-	// 0B:64 0C:66 82:00 83:00 84:32 85:64 86:00 87:FF 88:00 89:FF 8A:21 8B:64 8C:66
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x01, 0x64, 0x66,
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x21, 0x64, 0x66
-};
-const uint8_t peerEven[] =   {		// cnl 1, 3, 5
-	// Default actor dual 2: 02:00 03:00 04:32 05:64 06:00 07:FF 08:00 09:FF 0A:01
-	// 0B:13 0C:33 82:00 83:00 84:32 85:64 86:00 87:FF 88:00 89:FF 8A:21 8B:13 8C:33
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x01, 0x13, 0x33,
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x21, 0x13, 0x33
-};
-const uint8_t peerSingle[] = {
-	// Default actor single: 02:00 03:00 04:32 05:64 06:00 07:FF 08:00 09:FF 0A:01
-	// 0B:14 0C:63 82:00 83:00 84:32 85:64 86:00 87:FF 88:00 89:FF 8A:21 8B:14 8C:63
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x01, 0x14, 0x63,
-	0x00, 0x00, 0x32, 0x64, 0x00, 0xFF, 0x00, 0xFF, 0x21, 0x14, 0x63,
-};
+// default settings are defined in cmSwitch.cpp - updatePeerDefaults
 
 
-class cmSwitch {
-  //- user code here ------------------------------------------------------------------------------------------------------
-  public://----------------------------------------------------------------------------------------------------------------
-  protected://-------------------------------------------------------------------------------------------------------------
-  private://---------------------------------------------------------------------------------------------------------------
-	struct s_lstCnl {
-		// 0x08,
-		uint8_t  sign                :1;     // 0x08, s:0, e:1
-		uint8_t                      :7;     //
-	} lstCnl;
+const uint8_t cmSwitch_ChnlReg[] PROGMEM = { 0x08, };
+const uint8_t cmSwitch_ChnlDef[] PROGMEM = { 0x00, };
+
+const uint8_t cmSwitch_PeerReg[] PROGMEM = { 0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c, };
+const uint8_t cmSwitch_PeerDef[] PROGMEM = { 0x00,0x00,0x32,0x64,0x00,0xff,0x00,0xff,0x01,0x44,0x44,0x00,0x00,0x32,0x64,0x00,0xff,0x00,0xff,0x21,0x44,0x44, };
+
+#define NOT_USED 255
+namespace ACTION {
+	enum E : uint8_t { INACTIVE, JUMP_TO_TARGET, TOGGLE_TO_COUNTER, TOGGLE_INV_TO_COUNTER };
+};
+namespace JT {
+	enum E : uint8_t { NO_JUMP_IGNORE_COMMAND = 0x00, ONDELAY = 0x01, ON = 0x03, OFFDELAY = 0x04, OFF = 0x06 };
+};
+namespace CT {
+	enum E : uint8_t { X_GE_COND_VALUE_LO, X_GE_COND_VALUE_HI, X_LT_COND_VALUE_LO, X_LT_COND_VALUE_HI, COND_VALUE_LO_LE_X_LT_COND_VALUE_HI, X_LT_COND_VALUE_LO_OR_X_GE_COND_VALUE_HI };
+};
+
+class cmSwitch : public cmMaster {
+private:  //---------------------------------------------------------------------------------------------------------------
+
+	struct s_l1 {
+		uint8_t AES_ACTIVE           : 1;  // 0x08.0, s:1   d: false  
+		uint8_t                      : 7;  // 0x08.1, s:7   d:   
+	} *l1;  
 
 	struct s_lstPeer {
-		// 0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,
-		uint8_t  shCtDlyOn           :4;     // 0x02, s:0, e:4
-		uint8_t  shCtDlyOff          :4;     // 0x02, s:4, e:8
-		uint8_t  shCtOn              :4;     // 0x03, s:0, e:4
-		uint8_t  shCtOff             :4;     // 0x03, s:4, e:8
-		uint8_t  shCtValLo;                  // 0x04, s:0, e:0
-		uint8_t  shCtValHi;                  // 0x05, s:0, e:0
-		uint8_t  shOnDly;                    // 0x06, s:0, e:0
-		uint8_t  shOnTime;                   // 0x07, s:0, e:0
-		uint8_t  shOffDly;                   // 0x08, s:0, e:0
-		uint8_t  shOffTime;                  // 0x09, s:0, e:0
-		uint8_t  shActionType        :2;     // 0x0a, s:0, e:2
-		uint8_t                      :4;     //
-		uint8_t  shOffTimeMode       :1;     // 0x0a, s:6, e:7
-		uint8_t  shOnTimeMode        :1;     // 0x0a, s:7, e:8
-		uint8_t  shSwJtOn            :4;     // 0x0b, s:0, e:4
-		uint8_t  shSwJtOff           :4;     // 0x0b, s:4, e:8
-		uint8_t  shSwJtDlyOn         :4;     // 0x0c, s:0, e:4
-		uint8_t  shSwJtDlyOff        :4;     // 0x0c, s:4, e:8
-		uint8_t  lgCtDlyOn           :4;     // 0x82, s:0, e:4
-		uint8_t  lgCtDlyOff          :4;     // 0x82, s:4, e:8
-		uint8_t  lgCtOn              :4;     // 0x83, s:0, e:4
-		uint8_t  lgCtOff             :4;     // 0x83, s:4, e:8
-		uint8_t  lgCtValLo;                  // 0x84, s:0, e:0
-		uint8_t  lgCtValHi;                  // 0x85, s:0, e:0
-		uint8_t  lgOnDly;                    // 0x86, s:0, e:0
-		uint8_t  lgOnTime;                   // 0x87, s:0, e:0
-		uint8_t  lgOffDly;                   // 0x88, s:0, e:0
-		uint8_t  lgOffTime;                  // 0x89, s:0, e:0
-		uint8_t  lgActionType        :2;     // 0x8a, s:0, e:2
-		uint8_t                      :3;     //
-		uint8_t  lgMultiExec         :1;     // 0x8a, s:5, e:6
-		uint8_t  lgOffTimeMode       :1;     // 0x8a, s:6, e:7
-		uint8_t  lgOnTimeMode        :1;     // 0x8a, s:7, e:8
-		uint8_t  lgSwJtOn            :4;     // 0x8b, s:0, e:4
-		uint8_t  lgSwJtOff           :4;     // 0x8b, s:4, e:8
-		uint8_t  lgSwJtDlyOn         :4;     // 0x8c, s:0, e:4
-		uint8_t  lgSwJtDlyOff        :4;     // 0x8c, s:4, e:8
-	} lstPeer;
+		uint8_t SHORT_CT_ONDELAY     : 4;  // 0x02.0, s:4   d: X GE COND_VALUE_LO  ----------------------------------------
+		uint8_t SHORT_CT_OFFDELAY    : 4;  // 0x02.4, s:4   d: X GE COND_VALUE_LO   
+		uint8_t SHORT_CT_ON          : 4;  // 0x03.0, s:4   d: X GE COND_VALUE_LO  
+		uint8_t SHORT_CT_OFF         : 4;  // 0x03.4, s:4   d: X GE COND_VALUE_LO  
+		uint8_t SHORT_COND_VALUE_LO  : 8;  // 0x04.0, s:8   d: 50  
+		uint8_t SHORT_COND_VALUE_HI  : 8;  // 0x05.0, s:8   d: 100  
+		uint8_t SHORT_ONDELAY_TIME   : 8;  // 0x06.0, s:8   d: 0 s                      11 Byte for a short struct to
+		uint8_t SHORT_ON_TIME        : 8;  // 0x07.0, s:8   d: 111600.0 s               differentiate between short
+		uint8_t SHORT_OFFDELAY_TIME  : 8;  // 0x08.0, s:8   d: 0 s                      and long values
+		uint8_t SHORT_OFF_TIME       : 8;  // 0x09.0, s:8   d: 111600.0 s 
+		uint8_t SHORT_ACTION_TYPE    : 2;  // 0x0a.0, s:2   d: JUMP_TO_TARGET  
+		uint8_t                      : 4;  // 0x0a.2, s:4   d:   
+		uint8_t SHORT_OFF_TIME_MODE  : 1;  // 0x0a.6, s:1   d: ABSOLUTE  
+		uint8_t SHORT_ON_TIME_MODE   : 1;  // 0x0a.7, s:1   d: ABSOLUTE  
+		uint8_t SHORT_JT_ON          : 4;  // 0x0b.0, s:4   d: OFF  
+		uint8_t SHORT_JT_OFF         : 4;  // 0x0b.4, s:4   d: OFF  
+		uint8_t SHORT_JT_ONDELAY     : 4;  // 0x0c.0, s:4   d: OFF  
+		uint8_t SHORT_JT_OFFDELAY    : 4;  // 0x0c.4, s:4   d: OFF                 ----------------------------------------
+		uint8_t LONG_CT_ONDELAY      : 4;  // 0x82.0, s:4   d: X GE COND_VALUE_LO  ---------------------------------------- 
+		uint8_t LONG_CT_OFFDELAY     : 4;  // 0x82.4, s:4   d: X GE COND_VALUE_LO  
+		uint8_t LONG_CT_ON           : 4;  // 0x83.0, s:4   d: X GE COND_VALUE_LO  
+		uint8_t LONG_CT_OFF          : 4;  // 0x83.4, s:4   d: X GE COND_VALUE_LO  
+		uint8_t LONG_COND_VALUE_LO   : 8;  // 0x84.0, s:8   d: 50  
+		uint8_t LONG_COND_VALUE_HI   : 8;  // 0x85.0, s:8   d: 100  
+		uint8_t LONG_ONDELAY_TIME    : 8;  // 0x86.0, s:8   d: 0 s                      another 11 byte for the long
+		uint8_t LONG_ON_TIME         : 8;  // 0x87.0, s:8   d: 111600.0 s				message portion 
+		uint8_t LONG_OFFDELAY_TIME   : 8;  // 0x88.0, s:8   d: 0 s 
+		uint8_t LONG_OFF_TIME        : 8;  // 0x89.0, s:8   d: 111600.0 s 
+		uint8_t LONG_ACTION_TYPE     : 2;  // 0x8a.0, s:2   d: JUMP_TO_TARGET  
+		uint8_t                      : 3;  // 0x8a.2, s:3   d:   
+		uint8_t LONG_MULTIEXECUTE    : 1;  // 0x8a.5, s:1   d: ON  
+		uint8_t LONG_OFF_TIME_MODE   : 1;  // 0x8a.6, s:1   d: ABSOLUTE  
+		uint8_t LONG_ON_TIME_MODE    : 1;  // 0x8a.7, s:1   d: ABSOLUTE  
+		uint8_t LONG_JT_ON           : 4;  // 0x8b.0, s:4   d: OFF  
+		uint8_t LONG_JT_OFF          : 4;  // 0x8b.4, s:4   d: OFF  
+		uint8_t LONG_JT_ONDELAY      : 4;  // 0x8c.0, s:4   d: OFF  
+		uint8_t LONG_JT_OFFDELAY     : 4;  // 0x8c.4, s:4   d: OFF                 ----------------------------------------
+	} *l3F;
 
 	struct s_l3 {
-		// 0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,
-		uint8_t  ctDlyOn             :4;     // 0x02, 0x82, s:0, e:4
-		uint8_t  ctDlyOff            :4;     // 0x02, 0x82, s:4, e:8
-		uint8_t  ctOn                :4;     // 0x03, 0x83, s:0, e:4
-		uint8_t  ctOff               :4;     // 0x03, 0x83, s:4, e:8
-		uint8_t  ctValLo;                    // 0x04, 0x84, s:0, e:0
-		uint8_t  ctValHi;                    // 0x05, 0x85, s:0, e:0
-		uint8_t  onDly;                      // 0x06, 0x86, s:0, e:0
-		uint8_t  onTime;                     // 0x07, 0x87, s:0, e:0
-		uint8_t  offDly;                     // 0x08, 0x88, s:0, e:0
-		uint8_t  offTime;                    // 0x09, 0x89, s:0, e:0
-		uint8_t  actionType          :2;     // 0x0a, 0x8a, s:0, e:2
-		uint8_t                      :3;     //
-		uint8_t  multiExec           :1;     //       0x8a, s:5, e:6
-		uint8_t  offTimeMode         :1;     // 0x0a, 0x8a, s:6, e:7
-		uint8_t  onTimeMode          :1;     // 0x0a, 0x8a, s:7, e:8
-		uint8_t  jtOn                :4;     // 0x0b, 0x8b, s:0, e:4
-		uint8_t  jtOff               :4;     // 0x0b, 0x8b, s:4, e:8
-		uint8_t  jtDlyOn             :4;     // 0x0c, 0x8c, s:0, e:4
-		uint8_t  jtDlyOff            :4;     // 0x0c, 0x8c, s:4, e:8
+		uint8_t CT_ONDELAY           : 4;  // 0x02.0, s:4   d: X GE COND_VALUE_LO   -- ctDlyOn             :4;     // 0x02, 0x82, s:0, e:4
+		uint8_t CT_OFFDELAY          : 4;  // 0x02.4, s:4   d: X GE COND_VALUE_LO   -- ctDlyOff            :4;     // 0x02, 0x82, s:4, e:8 
+		uint8_t CT_ON                : 4;  // 0x03.0, s:4   d: X GE COND_VALUE_LO   -- ctOn                :4;     // 0x03, 0x83, s:0, e:4
+		uint8_t CT_OFF               : 4;  // 0x03.4, s:4   d: X GE COND_VALUE_LO   -- ctOff               :4;     // 0x03, 0x83, s:4, e:8
+		uint8_t COND_VALUE_LO        : 8;  // 0x04.0, s:8   d: 50                   -- ctValLo;                    // 0x04, 0x84, s:0, e:0
+		uint8_t COND_VALUE_HI        : 8;  // 0x05.0, s:8   d: 100                  -- ctValHi;                    // 0x05, 0x85, s:0, e:0
+		uint8_t ONDELAY_TIME         : 8;  // 0x06.0, s:8   d: 0 s                  -- onDly;                      // 0x06, 0x86, s:0, e:0
+		uint8_t ON_TIME              : 8;  // 0x07.0, s:8   d: 111600.0 s           -- onTime;                     // 0x07, 0x87, s:0, e:0
+		uint8_t OFFDELAY_TIME        : 8;  // 0x08.0, s:8   d: 0 s                  -- offDly;                     // 0x08, 0x88, s:0, e:0
+		uint8_t OFF_TIME             : 8;  // 0x09.0, s:8   d: 111600.0 s           -- offTime;                    // 0x09, 0x89, s:0, e:0
+		uint8_t ACTION_TYPE          : 2;  // 0x0a.0, s:2   d: JUMP_TO_TARGET       -- actionType          :2;     // 0x0a, 0x8a, s:0, e:2
+		uint8_t                      : 3;  // 0x0a.2, s:3   d:   
+		uint8_t                      : 1;  // 0x0a.5, s:1   d:                      -- multiExec           :1;     //       0x8a, s:5, e:6
+		uint8_t OFF_TIME_MODE        : 1;  // 0x0a.6, s:1   d: ABSOLUTE             -- offTimeMode         :1;     // 0x0a, 0x8a, s:6, e:7
+		uint8_t ON_TIME_MODE         : 1;  // 0x0a.7, s:1   d: ABSOLUTE	            -- onTimeMode          :1;     // 0x0a, 0x8a, s:7, e:8
+		uint8_t JT_ON                : 4;  // 0x0b.0, s:4   d: OFF                  -- jtOn                :4;     // 0x0b, 0x8b, s:0, e:4
+		uint8_t JT_OFF               : 4;  // 0x0b.4, s:4   d: OFF                  -- jtOff               :4;     // 0x0b, 0x8b, s:4, e:8
+		uint8_t JT_ONDELAY           : 4;  // 0x0c.0, s:4   d: OFF                  -- jtDlyOn             :4;     // 0x0c, 0x8c, s:0, e:4
+		uint8_t JT_OFFDELAY          : 4;  // 0x0c.4, s:4   d: OFF                  -- jtDlyOff            :4;     // 0x0c, 0x8c, s:4, e:8
 	} *l3;
-	
 
-  public://----------------------------------------------------------------------------------------------------------------
-  //- user defined functions ----------------------------------------------------------------------------------------------
-	cmSwitch();
+	static void initSwitch(uint8_t channel);												// functions in user sketch needed
+	static void switchSwitch(uint8_t channel, uint8_t status);
 
-	void (*fInit)(uint8_t);																	// pointer to init function in main sketch
-	void (*fSwitch)(uint8_t,uint8_t);														// pointer to switch function in main sketch
+public:  //----------------------------------------------------------------------------------------------------------------
 
-	waitTimer delayTmr;																		// delay timer for relay
+	cmSwitch(const uint8_t peer_max);														// constructor
 
-	uint8_t   cnt;																			// message counter for type 40 message
-	uint8_t   curStat:4, nxtStat:4;															// current state and next state
+	struct s_tr11 {
+		uint8_t  active;																	// trigger 11 active
+		uint8_t  value;																		// trigger 11 set value
+		uint16_t ramp_time;																	// time store for trigger 11
+		uint16_t dura_time;																
+	} tr11;
 
-	waitTimer msgTmr;																		// message timer for sending status
-	uint16_t  msgDelay;																		// delay for sending initial status
-	uint8_t	  sendStat  :2;																	// indicator for sendStatus function
+	struct s_tr40 {
+		uint8_t   cnt;																		// counter store for type 40/41 messages to detect a repeated long
+		uint8_t   cur;																		// current state and next state
+		uint8_t	  nxt;
+	} tr40;
 
-	uint8_t   tr11      :1;																	// trigger 11 active
-	uint8_t   tr11Value;																	// trigger 11 set value
-	uint16_t  rampTme, duraTme;																// time store for trigger 11
+	s_cm_status cm_status;																	// defined in cmMaster.h, holds current status and set_satatus
 
-	uint8_t   setStat;																		// status to set on the Relay channel
+	inline void adjustStatus(void);															// setting of relay status
 
-	void      config(void Init(uint8_t), void xSwitch(uint8_t,uint8_t));					// handover for jump addresses
+	virtual void request_peer_defaults(uint8_t idx, s_m01xx01 *buf);						// add peer channel defaults to list3/4
 
-	void      trigger11(uint8_t value, uint8_t *rampTime, uint8_t *duraTime);				// what happens while a trigger11 message arrive
-	void      trigger40(uint8_t msgLng, uint8_t msgCnt);									// same for peer messages
-	void      trigger41(uint8_t msgBLL, uint8_t msgCnt, uint8_t msgVal);					// same for sensor messages
+	virtual void cm_poll(void);																// poll function, driven by HM loop
+	virtual void set_toggle(void);															// toggle the module initiated by config button
 
-	void      adjRly(void);																	// setting of relay status
-	void      sendStatus(void);																// help function to send status messages
+	/* receive functions to handle requests forwarded by AS:processMessage
+	*  only channel module related requests are forwarded, majority of requests are handled within main AS class */
+	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);										// master is asking for channel status
+	virtual void INSTRUCTION_SET(s_m1102xx *buf);											// master wants to set channel status
+	virtual void INSTRUCTION_INHIBIT_OFF(s_m1100xx *buf);									// deny access to switch, set_toogle and Remote 
+	virtual void INSTRUCTION_INHIBIT_ON(s_m1101xx *buf);									// grant access to switch
+	virtual void SWITCH(s_m3Exxxx *buf);													// switch message from master to test a peer setup
+	virtual void REMOTE(s_m40xxxx *buf);													// remote peer message
+	virtual void SENSOR_EVENT(s_m41xxxx *buf);												// sensor peer message
 
-	void      rlyPoll(void);																// polling function
-
-
-  //- mandatory functions for every new module to communicate within AS protocol stack ------------------------------------
-	uint8_t modStat;																		// module status byte, needed for list3 modules to answer status requests
-	uint8_t modDUL;																			// module down up low battery byte
-	uint8_t regCnl;																			// holds the channel for the module
-
-	AS      *hm;																			// pointer to HM class instance
-
-	void    setToggle(void);																// toggle the module initiated by config button
-	void    configCngEvent(void);															// list1 on registered channel had changed
-	void    pairSetEvent(uint8_t *data, uint8_t len);										// pair message to specific channel, handover information for value, ramp time and so on
-	void    pairStatusReq(void);															// event on status request
-	void    peerMsgEvent(uint8_t type, uint8_t *data, uint8_t len);							// peer message was received on the registered channel, handover the message bytes and length
-
-	void    poll(void);																		// poll function, driven by HM loop
-
-	//- predefined, no reason to touch ------------------------------------------------------------------------------------
-	void    regInHM(uint8_t cnl, uint8_t lst, AS *instPtr);									// register this module in HM on the specific channel
-	void    hmEventCol(uint8_t by3, uint8_t by10, uint8_t by11, uint8_t *data, uint8_t len);// call back address for HM for informing on events
-	void    peerAddEvent(uint8_t *data, uint8_t len);										// peer was added to the specific channel, 1st and 2nd byte shows peer channel, third and fourth byte shows peer index
 };
 
 #endif

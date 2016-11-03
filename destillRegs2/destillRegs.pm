@@ -1010,7 +1010,7 @@ sub print_channel_defaults {
 	print " "x4 ." * This values are the defined default values and should be set \n";
 	print " "x4 ." * in the first start function. \n";
 	print " "x4 ." */ \n";
-	print " "x4 ."const uint8_t cnlDefs[] PROGMEM = { \n";
+	print " "x4 ."const uint8_t cnlDefs[] = { \n";
 
 	## step through channels, lists
 	foreach my $cnl_lst (sort keys %$addr) {
@@ -1045,7 +1045,7 @@ sub print_channel_table {
 	print "\n";
 	
 	## print the table now
-	print " "x4 ."EE::s_cnlTbl cnlTbl[] = { \n";
+	print " "x4 ."const EE::s_cnlTbl cnlTbl[] = { \n";
 	print " "x8 ."// cnl, lst, sIdx, sLen, hide, pAddr \n";
 
 	my $row = 0; my $last_cnl_lst;
@@ -1071,28 +1071,29 @@ sub print_channel_table {
 	print "\n";
 	
 	print " "x4 ."/** \n";
-	print " "x4 ." * Peer-Device-List-Table \n";
-	print " "x4 ." * channel, maximum allowed peers, start address in EEprom \n";
+	print " "x4 ." * \@brief Peer-Device-List-Table \n";
+	print " "x4 ." * maximum allowed peers, link to row in cnlTbl, start address in EEprom\n";
 	print " "x4 ." */ \n";
 	
-	print " "x4 ."EE::s_peerTbl peerTbl[] = { \n";
-	print " "x8 ."// pMax, pAddr; \n";
+	print " "x4 ."const EE::s_peerTbl peerTbl[] = { \n";
+	print " "x8 ."//    pMax, pLink, pAddr; \n";
 	## first row needed, while missing a list3 or list4
 	if (($$input{$last_cnl_lst}{'list'} == 3) || ($$input{$last_cnl_lst}{'list'} == 4)) {
 		## last channel entry was a peer rows
-		printf " "x8 ."{ 0, cnlTbl[%d].pAddr + (cnlTbl[%d].sLen * CNL_%02d_PEERS) }, \n", $row-1, $row-1, $$input{$last_cnl_lst}{'channel'};	
+		printf " "x8 ."{            0, 0, cnlTbl[%d].pAddr + (cnlTbl[%d].sLen * CNL_%02d_PEERS) }, \n", $row-1, $row-1, $$input{$last_cnl_lst}{'channel'};	
 	} else {
 		##  last channel entry was a non peer rows
-		printf " "x8 ."{ 0, cnlTbl[%d].pAddr + cnlTbl[%d].sLen }, \n", $row-1, $row-1;	
+		printf " "x8 ."{            0, 0, cnlTbl[%d].pAddr + cnlTbl[%d].sLen }, \n", $row-1, $row-1;	
 	}
 	## remaining rows
-	$row = 0;
+	$row = 0; my $cnl_table_row = -1;
 	foreach my $cnl_lst (sort keys %$input) {
+		$cnl_table_row++;
 		next if (($$input{$cnl_lst}{'list'} != 3) && ($$input{$cnl_lst}{'list'} != 4));
-		printf " "x8 ."{ CNL_%02d_PEERS, peerTbl[%d].pAddr + (peerTbl[%d].pMax * 4) }, \n", $$input{$cnl_lst}{'channel'}, $row, $row;
+		printf " "x8 ."{ CNL_%02d_PEERS, %d, peerTbl[%d].pAddr + (peerTbl[%d].pMax * 4) }, \n", $$input{$cnl_lst}{'channel'}, $cnl_table_row, $row, $row;
 		$row += 1;
 	}	
-	print " "x4 ."}; // ", $row*3, " byte\n\n";	
+	print " "x4 ."}; // ", $row*4+4, " byte\n\n";	
 }
 sub print_device_description {
 	my $input = shift;
@@ -1145,7 +1146,7 @@ sub print_first_time_start {
 
 	print << 'END_LINE';
     /** 
-     * \@brief First time start function 
+     * @brief First time start function 
      * This function is called by the main function on the first boot of a device. 
      * First boot is indicated by a magic byte in the eeprom. 
      * Here we can setup everything which is needed for a proper device operation, like cleaning 
@@ -1176,7 +1177,7 @@ END_LINE
 	print << "END_LINE";
 \n        // format peer db
         hm.ee.clearPeers();
-    } \n;
+    } \n
 END_LINE
 }
 sub print_channel_structs {

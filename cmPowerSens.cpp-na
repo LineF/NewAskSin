@@ -68,7 +68,7 @@ void cmPowerSens::sendPowerEvent(uint32_t eCountToSend, uint32_t powerToSend){
 		Serial << F("sendPowerEvent3: ") << _HEX(buf, 6) << '\n';*/
 	#endif
 
-	hm->sendINFO_POWER_EVENT(buf);
+	hm.sendINFO_POWER_EVENT(buf);
 	lastReportedEnergyCount = energyCount;
 }
 
@@ -165,7 +165,7 @@ void cmPowerSens::configCngEvent(void) {
 	dbg << F("lstCnl *: ") << ((int)modTbl[0].lstCnl) <<  '\n';
 	dbg << F("lstCnl: ") << _HEX((uint8_t*)&lstCnl, 9) << '\n';
 	dbg << F("lstCnl *: ") << ((int)&lstCnl) <<  '\n';
-	dbg << F("lstCnl *: ") << ((int)modTbl[0].lstPeer) << F(" lst: ") << modTbl[0].lst <<  '\n';
+	//dbg << F("lstCnl *: ") << ((int)modTbl[0].lstPeer) << F(" lst: ") << modTbl[0].lst <<  '\n';
 
 	s_lstCnl * cnlList = ((s_lstCnl *)modTbl[0].lstCnl);
 	cnlList->METER_CONSTANT_LED1;
@@ -230,20 +230,29 @@ inline void cmPowerSens::pairStatusReq(void) {
 /**
  * @brief Register module in HM
  */
-void cmPowerSens::regInHM(uint8_t cnl, uint8_t lst, AS *instPtr) {
+void cmPowerSens::regInHM(uint8_t cnl, uint8_t lst) {
 	#ifdef CM_POWER_SENS_DBG
 		dbg << F("regInHM cnl: ")  << cnl << F(" lst: ")  << lst << '\n';
 	#endif
-	hm = instPtr;																	// set pointer to the HM module
-	hm->rg.regInAS(
+	RG::s_modTable *pModTbl = &modTbl[cnl];													// pointer to the respective line in the module table
+
+	pModTbl->isActive = 1;
+	pModTbl->mDlgt = myDelegate::from_function<CLASS_NAME, &CLASS_NAME::hmEventCol>(this);
+	pModTbl->lstCnl = (uint8_t*)&lstCnl;
+	pModTbl->lstPeer = (uint8_t*)&lstPeer;
+
+	hm.ee.getList(cnl, 1, 0, (uint8_t*)&lstCnl);											// load list1 in the respective buffer
+	regCnl = cnl;																			// stores the channel we are responsible fore
+		
+	/*hm.rg.regUserModuleInAS(
 		cnl,
 		lst,
-		s_mod_dlgt(this,&cmPowerSens::hmEventCol),
+		myDelegate::from_function<cmPowerSens, &cmPowerSens::hmEventCol>(this),
 		(uint8_t*)&lstCnl,
 		(uint8_t*)&lstPeer
 	);
 
-	regCnl = cnl;																	// stores the channel we are responsible fore
+	regCnl = cnl;	*/																// stores the channel we are responsible fore
 	infraDetector = InfraRedSignalDetector();
 }
 

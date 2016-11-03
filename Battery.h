@@ -13,31 +13,22 @@
 
 
 class BT {
-	friend class AS;
+public:		//---------------------------------------------------------------------------------------------------------
 
-  public:		//---------------------------------------------------------------------------------------------------------
-  protected:	//---------------------------------------------------------------------------------------------------------
-  private:		//---------------------------------------------------------------------------------------------------------
+	uint8_t  checkCentiVolt;												// holds the proof point
+	uint8_t  measureCentiVolt;												// variable to hold last measured value
+	uint8_t  bState        :1;												// holds status bit
+	uint8_t  bMode         :2;												// mode variable
+	uint32_t bDuration;														// duration for the next check
 	
-	class AS *pHM;								// pointer to main class for function calls
-
-	uint16_t  checkCentiVolt;					// holds the proof point
-	uint16_t  measureCentiVolt;					// variable to hold last measured value
-	uint8_t  bState        :1;					// holds status bit
-	uint8_t  bMode         :2;					// mode variable
-	uint32_t bDuration;							// duration for the next check
-	
-  public:		//---------------------------------------------------------------------------------------------------------
 	BT();
 	void	set(uint16_t centiVolt, uint32_t duration);
 	uint16_t getVolts(void);
 	uint8_t getStatus(void);
-		
-  protected:	//---------------------------------------------------------------------------------------------------------
-  private:		//---------------------------------------------------------------------------------------------------------
-	void    init(AS *ptrMain);
+
 	void    poll(void);
 };
 
+extern BT bat;																// declaration in AS.cpp
 
 #endif

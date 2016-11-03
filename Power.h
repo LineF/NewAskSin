@@ -37,28 +37,21 @@
 #define POWER_MODE_WAKEUP_EXT_INT 6
 
 class PW {
-	friend class AS;
-  
-  private:		//---------------------------------------------------------------------------------------------------------
-  protected:	//---------------------------------------------------------------------------------------------------------
-	class AS *pHM;							// pointer to main class for function calls
+public:		//---------------------------------------------------------------------------------------------------------
 
-	uint8_t pwrMode;						// remember the level of power savings
+	uint8_t pwrMode;														// remember the level of power savings
 	uint8_t chkCCBurst;
 	uint8_t comStat;
 	uint8_t tmpCCBurst;
 	
-  public:		//---------------------------------------------------------------------------------------------------------
+	PW();
 
-  public:		//---------------------------------------------------------------------------------------------------------
 	void setMode(uint8_t mode);
 	void stayAwake(uint16_t time);
-	
-  protected:	//---------------------------------------------------------------------------------------------------------
-  private:		//---------------------------------------------------------------------------------------------------------
-	PW();
-	void init(AS *ptrMain);
+
 	void poll(void);
 };
+
+extern PW pom;																// declaration of power management class in AS.cpp
 
 #endif 

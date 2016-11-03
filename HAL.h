@@ -24,7 +24,7 @@
 
 	#include "hardware.h"
 	#include "macros.h"
-	#include "Print.h"
+	//#include "Print.h"
 
 	//- MCU dependent HAL definitions -----------------------------------------------------------------------------------------
 	#if defined(__AVR_ATmega328P__)
@@ -85,9 +85,8 @@
 	*/
 
 	// template to enable dbg << "some text" << '\n' 
-	template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
-	struct _HEXB {
+/*	struct _HEXB {
 		uint8_t val;
 		_HEXB(uint8_t v) : val(v) {}
 	};
@@ -102,8 +101,9 @@
 
 	enum _eTIME { _TIME };
 	inline Print &operator <<(Print &obj, _eTIME arg) { obj.print('('); obj.print(getMillis()); obj.print(')'); return obj; }
-
-	extern void    dbgStart(void);
+*/
+	// initialize the serial interface
+	//void    dbgStart(void);
 	//- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -170,10 +170,10 @@
 
 
 	//- eeprom functions ------------------------------------------------------------------------------------------------------
-	extern void    initEEProm(void);
-	extern void    getEEPromBlock(uint16_t addr,uint8_t len,void *ptr);
-	extern void    setEEPromBlock(uint16_t addr,uint8_t len,void *ptr);
-	extern void    clearEEPromBlock(uint16_t addr, uint16_t len);
+	void    initEEProm(void);
+	void    getEEPromBlock(uint16_t addr,uint8_t len,void *ptr);
+	void    setEEPromBlock(uint16_t addr,uint8_t len,void *ptr);
+	void    clearEEPromBlock(uint16_t addr, uint16_t len);
 	//- -----------------------------------------------------------------------------------------------------------------------
 
 

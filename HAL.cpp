@@ -8,19 +8,13 @@
 
 #include <avr/boot.h>
 #include "HAL.h"
+#include "00_debug-flag.h"
 
 //- some macros for debugging ---------------------------------------------------------------------------------------------
 
 // todo: customize baudrate
 // remove mcu dependencies
-void dbgStart(void) {
-	power_serial_enable();														// enable the debuging port
 
-	if (!(UCSR & (1<<RXEN))) {													// check if serial was already set
-		dbg.begin(57600);
-		_delay_ms(500);
-	}
-}
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -119,7 +113,7 @@ void	calibrateWatchdog() {													// initMillis() must have been called yet
 	SREG = sreg;																// restore previous interrupt state
 	wdt_cal_ms = getMillis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
 	stopWDG();
-	dbg << F("wdt_cal: ") << wdt_cal_ms << F("\n");
+	DBG(SER, F("wdt_cal: "), wdt_cal_ms, F("\n"));
 }
 void    startWDG() {
 	WDTCSR = (1<<WDIE);
@@ -207,16 +201,20 @@ void    initEEProm(void) {
 	// place the code to init a i2c eeprom
 }
 void    getEEPromBlock(uint16_t addr,uint8_t len,void *ptr) {
-	eeprom_read_block((void*)ptr,(const void*)addr,len);									// AVR GCC standard function
+	eeprom_read_block( (void*)ptr, (const void*)addr, len );								// AVR GCC standard function
+	//dbg << "getEEPromBlock:" << addr << ", len:" << len << ", data:" << _HEX((uint8_t*)ptr, len) << '\n';
 }
 void    setEEPromBlock(uint16_t addr,uint8_t len,void *ptr) {
-	eeprom_write_block((const void*)ptr,(void*)addr,len);									// AVR GCC standard function
+	eeprom_write_block( (const void*)ptr, (void*)addr, len) ;								// AVR GCC standard function
+	//dbg << "setEEPromBlock:" << addr << ", len:" << len << ", data:" << _HEX((uint8_t*)ptr, len) << '\n';
 }
 void    clearEEPromBlock(uint16_t addr, uint16_t len) {
 	uint8_t tB=0;
+	if (!len) return;
 	for (uint16_t l = 0; l < len; l++) {													// step through the bytes of eeprom
 		setEEPromBlock(addr+l,1,(void*)&tB);
 	}
+	//dbg << "clearEEPromBlock:" << addr << ", len:" << len << '\n';
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
