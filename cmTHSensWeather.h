@@ -52,8 +52,8 @@ public:  //---------------------------------------------------------------------
 		uint16_t	bat;
 	} sensVal;
 
-	waitTimer msgTmr;																		// message timer for sending status
-	uint8_t	  sendStat;																		// indicator for sendStatus function
+	//waitTimer msgTmr;																		// message timer for sending status
+	//uint8_t	  sendStat;																		// indicator for sendStatus function
 	s_cm_status cm_status;																	// defined in cmMaster.h, holds current status and set_satatus
 
 	waitTimer sensTmr;																		// delay timer for sensor

@@ -184,6 +184,7 @@ void cmMaster::CONFIG_END(s_m01xx06 *buf) {
 	s_config_mode *cm = &config_mode;														// short hand to config mode struct
 	cm->timer.set(0);																		// clear the timer
 	cm->active = 0;																			// clear the flag
+	snd_msg.mBody.FLAG.WKMEUP= 1;
 	hm.send_ACK();																			// send back that everything is ok
 
 	if (cm->list->lst < 2) {
@@ -412,6 +413,7 @@ void send_status(s_cm_status *cm, uint8_t cnl) {
 	else if (cm->value >  cm->set_value) cm->f.DOWN = 1;
 
 	if (!cm->delay.done())               cm->f.DELAY = 1;
+DBG(CM, F("CM: delay.done: "), cm->delay.done(), F(", f.DELAY: "), cm->f.DELAY, F("\n"));
 	if (bat.getStatus())                 cm->f.LOWBAT = 1;;
 
 	/* check which type has to be send - if it is an ACK and modDUL != 0, then set timer for sending a actuator status */

@@ -135,6 +135,7 @@ void SN::process_config_list_answer_slice(void) {
 		//DBG(SN, F("SN:LIST_ANSWER::DONE cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
 		cl->active = 0;
 		cl->cur_slc = 0;
+		snd_msg.mBody.FLAG.WKMEUP = 1;
 	}
 }
 

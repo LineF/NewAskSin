@@ -636,6 +636,10 @@ void AS::check_send_ACK_NACK(uint8_t ackOk) {
 */
 void AS::send_ACK(void) {
 	if (!rcv_msg.mBody.FLAG.BIDI) return;													// send ack only if required
+//	if (rcv_msg.mBody.MSG_TYP != BY03(MSG_TYPE::HAVE_DATA))
+//		snd_msg.mBody.FLAG.WKMEUP = 1;
+//	if (rcv_msg.mBody.FLAG.WKUP)
+//		snd_msg.mBody.FLAG.WKUP = 1;
 	snd_msg.mBody.MSG_CNT = rcv_msg.mBody.MSG_CNT;											// as it is an answer, we reflect the counter in the answer
 	snd_msg.set_msg(MSG_TYPE::ACK, rcv_msg.mBody.SND_ID);									// length and flags are set within the snd_msg struct
 }
@@ -1400,10 +1404,10 @@ void AS::deviceReset(uint8_t clearEeprom) {
 	}
 
 	#ifdef WDT_RESET_ON_RESET
-		wdt_enable(WDTO_15MS);																	// configure the watchdog so the reset sould trigger in 15ms
+		wdt_enable(WDTO_15MS);																	// configure the watchdog so the reset should trigger in 15ms
 	#else
 		init();
-		ld.set(welcome);
+		led.set(welcome);
 	#endif
 }
 
