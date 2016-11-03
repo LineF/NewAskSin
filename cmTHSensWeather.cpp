@@ -22,6 +22,7 @@
 #include "cmTHSensWeather.h"
 
 cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
+	DBG_START(TH, F("TH.\n"));
 
 	lstC.lst = 1;																			// setup the channel list with all dependencies
 	lstC.reg = (uint8_t*)cmTHSensWeather_ChnlReg;
@@ -100,10 +101,21 @@ void cmTHSensWeather::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t 
 	DBG(TH, F("trigger41, msgLng:"), msgLng, F(", msgCnt:"), msgCnt, F(", val:"), msgVal, '\n' );
 }
 
+/*
+* @brief Received message handling forwarded by AS::processMessage
+*/
+void cmTHSensWeather::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
+	cm_status.message_type = INFO::SND_ACTUATOR_STATUS;										// send next time a info status message
+	cm_status.message_delay.set(50);														// wait a short time to set status
+
+	DBG(TH, F("TH:CONFIG_STATUS_REQUEST\n"));
+}
+
+/*
 void cmTHSensWeather::sendStatus(void) {
 
 	if (!sendStat) return;																	// nothing to do
-	//if (!msgTmr.done()) return;																// not the right time
+	if (!msgTmr.done()) return;																// not the right time
 	
 	// check which type has to be send
 	if      ( sendStat == INFO::SND_ACK_STATUS )      hm.send_ACK_STATUS(lstC.cnl, 0, 0);
@@ -111,9 +123,11 @@ void cmTHSensWeather::sendStatus(void) {
 
 	sendStat = INFO::NOTHING;
 }
+*/
 
 void cmTHSensWeather::cm_poll(void) {
 
+	send_status(&cm_status, lstC.cnl);														// check if there is some status to send, function call in cmMaster.cpp
 	//adjustStatus();																		// check if something is to be set on the Relay channel
 	//sendStatus();																			// check if there is some status to send
 

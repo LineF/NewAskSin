@@ -14,7 +14,6 @@
 
 // default settings are defined in cmTHSensWeather.cpp - updatePeerDefaults
 
-
 // List 1
 const uint8_t cmTHSensWeather_ChnlReg[] PROGMEM = { 0x08, };
 const uint8_t cmTHSensWeather_ChnlDef[] PROGMEM = { 0x00, };
@@ -23,19 +22,6 @@ const uint8_t cmTHSensWeather_ChnlDef[] PROGMEM = { 0x00, };
 const uint8_t cmTHSensWeather_PeerReg[] PROGMEM = { 0x01,0x02, };
 const uint8_t cmTHSensWeather_PeerDef[] PROGMEM = { 0x00,0x00, };
 
-//#define NOT_USED 255
-//namespace ACTION {
-	//enum E : uint8_t { INACTIVE, JUMP_TO_TARGET, TOGGLE_TO_COUNTER, TOGGLE_INV_TO_COUNTER };
-//};
-//namespace JT {
-	//enum E : uint8_t { NO_JUMP_IGNORE_COMMAND = 0x00, ONDELAY = 0x01, ON = 0x03, OFFDELAY = 0x04, OFF = 0x06 };
-//};
-//namespace CT {
-	//enum E : uint8_t { X_GE_COND_VALUE_LO, X_GE_COND_VALUE_HI, X_LT_COND_VALUE_LO, X_LT_COND_VALUE_HI, COND_VALUE_LO_LE_X_LT_COND_VALUE_HI, X_LT_COND_VALUE_LO_OR_X_GE_COND_VALUE_HI };
-//};
-namespace INFO {
-	enum E : uint8_t { NOTHING, SND_ACK_STATUS, SND_ACTUATOR_STATUS };
-}
 
 class cmTHSensWeather : public cmMaster {
 private:  //---------------------------------------------------------------------------------------------------------------
@@ -66,8 +52,9 @@ public:  //---------------------------------------------------------------------
 		uint16_t	bat;
 	} sensVal;
 
-	//waitTimer msgTmr;																		// message timer for sending status
+	waitTimer msgTmr;																		// message timer for sending status
 	uint8_t	  sendStat;																		// indicator for sendStatus function
+	s_cm_status cm_status;																	// defined in cmMaster.h, holds current status and set_satatus
 
 	waitTimer sensTmr;																		// delay timer for sensor
 
@@ -82,8 +69,9 @@ public:  //---------------------------------------------------------------------
 
 	virtual void cm_poll(void);																// poll function, driven by HM loop
 	virtual void set_toggle(void);															// toggle the module initiated by config button
+	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);
 
-	inline void sendStatus(void);															// help function to send status messages
+	//inline void sendStatus(void);															// help function to send status messages
 };
 
 extern void initTH(uint8_t channel);														// functions in user sketch needed

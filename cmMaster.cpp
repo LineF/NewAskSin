@@ -214,7 +214,7 @@ void cmMaster::CONFIG_WRITE_INDEX2(s_m01xx08 *buf) {
 	if (cm->active)  {																		// check if config is active, channel fit is checked in AS
 		cm->list->write_array(buf->DATA, buf->MSG_LEN - 11, cm->idx_peer);					// write the array into the list
 		hm.send_ACK();																		// we are fine
-		DBG(CM, F("CM:CONFIG_WRITE_INDEX2, cnl:"), buf->MSG_CNL, F(", lst:"), cm->lst, F(", idx:"), cm->idx_peer, '\n');
+		DBG(CM, F("CM:CONFIG_WRITE_INDEX2, cnl:"), buf->MSG_CNL, /*F(", lst:"), cm->lst, F(", idx:"), cm->idx_peer, */'\n');
 	} else hm.send_NACK();
 }
 /*
