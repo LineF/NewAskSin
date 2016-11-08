@@ -42,9 +42,11 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 
 	initTH(lstC.cnl);																		// call external init function to set the output pins
 
-	//uint16_t msgDelay = (rand() % 2000) + 1000;												// set message delay
+	//uint16_t msgDelay = (rand() % 2000) + 1000;											// set message delay
 	//msgTmr.set(msgDelay);																	// wait some time to settle the device
-	//sendStat = INFO::SND_ACTUATOR_STATUS;													// send the initial status info
+	//cm_status.message_type = INFO::SND_ACTUATOR_STATUS;									// send the initial status info
+	cm_status.message_type = INFO::NOTHING;													// send the initial status info
+	cm_status.message_delay.set(0);
 
 	sensTmr.set(3000);																		// wait for first measurement being completed
 
