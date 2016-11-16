@@ -39,7 +39,7 @@
 //#define CM_DBG					// Channel Master module (cmMaster.cpp)
 //#define MN_DBG				// Maintenance channel module (cmMaintenance.cpp)
 //#define TH_DBG				// TH channel module (cmTHSensWeather.cpp)
-#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
+//#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
 
 
 /*
