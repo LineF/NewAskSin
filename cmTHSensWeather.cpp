@@ -22,7 +22,7 @@
 #include "cmTHSensWeather.h"
 
 cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
-	DBG_START(TH, F("TH.\n"));
+	DBG(TH, F("TH.\n"));
 
 	lstC.lst = 1;																			// setup the channel list with all dependencies
 	lstC.reg = (uint8_t*)cmTHSensWeather_ChnlReg;
