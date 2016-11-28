@@ -40,6 +40,7 @@
 //#define MN_DBG				// Maintenance channel module (cmMaintenance.cpp)
 //#define TH_DBG				// TH channel module (cmTHSensWeather.cpp)
 //#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
+#define RE_DBG					// Remote channel module (cmRemote.cpp)
 
 
 /*
@@ -125,6 +126,13 @@
 	#define DBG_DM(...) Serial ,__VA_ARGS__
 #else
 	#define DBG_DM(...) 
+#endif
+
+/* channel module remote */
+#ifdef RE_DBG
+	#define DBG_RE(...) Serial ,__VA_ARGS__
+#else
+	#define DBG_RE(...) 
 #endif
 
 
