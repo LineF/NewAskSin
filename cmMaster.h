@@ -58,7 +58,11 @@ public://-----------------------------------------------------------------------
 
 	void init(void);																		// init function, called after AS initialisation
 	virtual void cm_init(void) {}															// init function for channel modules to overwrite
-	virtual void cm_init(uint8_t PINBIT, volatile uint8_t *DDREG, volatile uint8_t *PORTREG, volatile uint8_t *PINREG, uint8_t PCINR, uint8_t PCIBYTE, volatile uint8_t *PCICREG, volatile uint8_t *PCIMASK, uint8_t PCIEREG, uint8_t VEC) {}
+
+	
+	/* virtual declaration for cmRemote channel module. make pin configuration and button event accessible */
+	virtual void cm_init_pin(uint8_t PINBIT, volatile uint8_t *DDREG, volatile uint8_t *PORTREG, volatile uint8_t *PINREG, uint8_t PCINR, uint8_t PCIBYTE, volatile uint8_t *PCICREG, volatile uint8_t *PCIMASK, uint8_t PCIEREG, uint8_t VEC) {}
+	virtual void button_action(uint8_t event) {}
 
 	void poll(void);																		// poll function, driven by HM loop
 	virtual void cm_poll(void) {}															// poll function for channel modules to overwrite
@@ -252,7 +256,7 @@ void send_HAVE_DATA();
 
 void send_SWITCH(s_peer_table *peerDB);													// peer related communication
 void send_TIMESTAMP(s_peer_table *peerDB);												// needed as send and receive function
-void send_REMOTE(s_peer_table *peerDB);													// will be send to the peerlist, therefor
+void send_REMOTE(s_peer_table *peerDB, s_list_table *listP, uint8_t *payload, uint8_t bidi); // will be send to the peerlist, therefor
 void send_SENSOR_EVENT(s_peer_table *peerDB);											// handover of the respective peerDB pointer
 void send_SWITCH_LEVEL(s_peer_table *peerDB);											// is mandatory
 void send_SENSOR_DATA(s_peer_table *peerDB);
