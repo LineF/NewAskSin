@@ -65,9 +65,9 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 * @param duraTime Pointer to 2 byte array containing the encoded durationtime value
 *
 */
-void cmTHSensWeather::message_trigger11(uint8_t setValue, uint8_t *rampTime, uint8_t *duraTime) {
+/*void cmTHSensWeather::message_trigger11(uint8_t setValue, uint8_t *rampTime, uint8_t *duraTime) {
 	DBG(TH, F("trigger11, setValue:"), setValue, F(", rampTime:"), intTimeCvt((uint16_t) rampTime), F(", duraTime:"), intTimeCvt((uint16_t) duraTime), '\n' );
-}
+}*/
 
 /**
 * @brief Function is called on messages coming from master, simulating a remote or push button.
@@ -76,9 +76,9 @@ void cmTHSensWeather::message_trigger11(uint8_t setValue, uint8_t *rampTime, uin
 * @param msgCnt 1 byte containing the message counter of the sender
 *
 */
-void cmTHSensWeather::message_trigger3E(uint8_t msgLng, uint8_t msgCnt) {
+/*void cmTHSensWeather::message_trigger3E(uint8_t msgLng, uint8_t msgCnt) {
 	message_trigger40(msgLng, msgCnt);
-}
+}*/
 
 /**
 * @brief Function is called on messages coming from a remote or push button.
@@ -87,9 +87,9 @@ void cmTHSensWeather::message_trigger3E(uint8_t msgLng, uint8_t msgCnt) {
 * @param msgCnt 1 byte containing the message counter of the sender
 *
 */
-void cmTHSensWeather::message_trigger40(uint8_t msgLng, uint8_t msgCnt) {
+/*void cmTHSensWeather::message_trigger40(uint8_t msgLng, uint8_t msgCnt) {
 	DBG(TH, F("trigger40, msgLng:"), msgLng, F(", msgCnt:"), msgCnt, '\n' );
-}
+}*/
 
 /**
 * @brief Function is called on messages coming from sensors.
@@ -99,9 +99,9 @@ void cmTHSensWeather::message_trigger40(uint8_t msgLng, uint8_t msgCnt) {
 * @param msgVal 1 byte with the value of the sensor
 *
 */
-void cmTHSensWeather::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal) {
+/*void cmTHSensWeather::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal) {
 	DBG(TH, F("trigger41, msgLng:"), msgLng, F(", msgCnt:"), msgCnt, F(", val:"), msgVal, '\n' );
-}
+}*/
 
 /*
 * @brief Received message handling forwarded by AS::processMessage
@@ -141,24 +141,25 @@ void cmTHSensWeather::cm_poll(void) {
 	//DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
 	//DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
 	
-	hm.sendINFO_WEATHER_EVENT(lstC.cnl, 0, (uint8_t *)&sensVal, sizeof(sensVal));			// prepare the message and send, burst if burstRx register is set
+	//hm.sendINFO_WEATHER_EVENT(lstC.cnl, 0, (uint8_t *)&sensVal, sizeof(sensVal));			// prepare the message and send, burst if burstRx register is set
+	send_WEATHER_EVENT(&peerDB, &lstP, (uint8_t *)&sensVal, sizeof(sensVal));				// prepare the message and send, burst if burstRx register is set
 }
 
 
-void cmTHSensWeather::set_toggle(void) {
+/*void cmTHSensWeather::set_toggle(void) {
 	// setToggle will be addressed by config button in mode 2 by a short key press
 	// here we can toggle the status of the actor
 	DBG(TH, F("set_toggle\n") );
-}
+}*/
 
 
-void cmTHSensWeather::request_pair_status(void) {
+/*void cmTHSensWeather::request_pair_status(void) {
 	// we received a status request, appropriate answer is an InfoActuatorStatus message
 	DBG(TH, F("request_pair_status\n") );
 	
 	//sendStat = INFO::SND_ACTUATOR_STATUS;													// send next time a info status message
 	//msgTmr.set(10);																			// wait a short time to set status
-}
+}*/
 
 
 uint32_t cmTHSensWeather::calcSendSlot(void) {
@@ -195,7 +196,7 @@ uint32_t cmTHSensWeather::calcSendSlot(void) {
 * automatically.
 */
 
-void cmTHSensWeather::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
+/*void cmTHSensWeather::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
 
 	// if both peer channels are given, peer channel 01 default is the off dataset, peer channel 02 default is the on dataset
 	// if only one peer channel is given, then the default dataset is toogle
@@ -215,5 +216,5 @@ void cmTHSensWeather::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
 	//} 
 
 	DBG(TH, F("cmTHSensWeather:request_peer_defaults CNL_A:"), _HEXB(buf->PEER_CNL[0]), F(", CNL_B:"), _HEXB(buf->PEER_CNL[1]), F(", idx:"), _HEXB(idx), '\n' );
-}
+}*/
 

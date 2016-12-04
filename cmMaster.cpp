@@ -805,7 +805,15 @@ void send_POWER_EVENT_CYCLE(s_peer_table *peerDB) {
 }
 void send_POWER_EVENT(s_peer_table *peerDB) {
 }
-void send_WEATHER_EVENT(s_peer_table *peerDB) {
+void send_WEATHER_EVENT(s_peer_table *peerDB, s_list_table *listP, uint8_t *payload, uint8_t payload_len) {
+	snd_msg.type = MSG_TYPE::WEATHER_EVENT;
+	snd_msg.peerDB = peerDB;
+	snd_msg.lstP = listP;
+	snd_msg.payload_ptr = payload;
+	snd_msg.payload_len = payload_len;
+	snd_msg.active = MSG_ACTIVE::PEER;
+	snd_msg.peer_max_retr = 3;
+	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), peerDB->used_slots(), F(", payload:"), _HEX(payload, payload_len), '\n');
 }
 
 

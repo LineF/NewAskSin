@@ -59,16 +59,16 @@ public:  //---------------------------------------------------------------------
 	waitTimer sensTmr;																		// delay timer for sensor
 
 
-	virtual void message_trigger11(uint8_t value, uint8_t *rampTime, uint8_t *duraTime);	// what happens while a trigger11 message arrive
-	virtual void message_trigger3E(uint8_t msgLng, uint8_t msgCnt);							// same for switch messages
-	virtual void message_trigger40(uint8_t msgLng, uint8_t msgCnt);							// same for peer messages
-	virtual void message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal);			// same for sensor messages
+	//virtual void message_trigger11(uint8_t value, uint8_t *rampTime, uint8_t *duraTime);	// what happens while a trigger11 message arrive
+	//virtual void message_trigger3E(uint8_t msgLng, uint8_t msgCnt);							// same for switch messages
+	//virtual void message_trigger40(uint8_t msgLng, uint8_t msgCnt);							// same for peer messages
+	//virtual void message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal);			// same for sensor messages
 
-	virtual void request_peer_defaults(uint8_t idx, s_m01xx01 *buf);						// add peer channel defaults to list3/4
-	virtual void request_pair_status(void);													// event on status request
+	//virtual void request_peer_defaults(uint8_t idx, s_m01xx01 *buf);						// add peer channel defaults to list3/4
+	//virtual void request_pair_status(void);													// event on status request
 
 	virtual void cm_poll(void);																// poll function, driven by HM loop
-	virtual void set_toggle(void);															// toggle the module initiated by config button
+	//virtual void set_toggle(void);															// toggle the module initiated by config button
 	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);
 
 	//inline void sendStatus(void);															// help function to send status messages
