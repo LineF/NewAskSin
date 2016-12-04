@@ -142,7 +142,7 @@ void cmTHSensWeather::cm_poll(void) {
 	//DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
 	
 	//hm.sendINFO_WEATHER_EVENT(lstC.cnl, 0, (uint8_t *)&sensVal, sizeof(sensVal));			// prepare the message and send, burst if burstRx register is set
-	send_WEATHER_EVENT(&peerDB, &lstP, (uint8_t *)&sensVal, sizeof(sensVal));				// prepare the message and send, burst if burstRx register is set
+	send_WEATHER_EVENT(this, (uint8_t *)&sensVal, sizeof(sensVal));							// prepare the message and send, burst if burstRx register is set
 }
 
 

@@ -267,7 +267,7 @@ void send_SET_TEAM_TEMP(s_peer_table *peerDB);
 void send_THERMAL_CONTROL(s_peer_table *peerDB);
 void send_POWER_EVENT_CYCLE(s_peer_table *peerDB);
 void send_POWER_EVENT(s_peer_table *peerDB);
-void send_WEATHER_EVENT(s_peer_table *peerDB, s_list_table *listP, uint8_t *payload, uint8_t payload_len);
+void send_WEATHER_EVENT(cmMaster *channel_module, uint8_t *payload, uint8_t payload_len);
 
 
 void process_peer_message(void);
