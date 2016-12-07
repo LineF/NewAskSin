@@ -706,7 +706,7 @@ void AS::snd_poll(void) {
 		* are initial send or as an answer to a received message. all necassary information are in the send struct */
 		if (isEqual(sm->mBody.RCV_ID, dev_ident.HMID, 3)) {
 			memcpy(rcv_msg.buf, sm->buf, sm->buf[0] + 1);									// copy send buffer to received buffer
-			DBG(SN, F("<i ...\n"));															// some debug, message is shown in the received string
+			DBG_SN(F("<i ...\n"));															// some debug, message is shown in the received string
 			rcv_poll();																		// get intent and so on...
 			sm->clear();																	// nothing to do any more for send, msg will processed in the receive loop
 			return;																			// and return...
@@ -737,7 +737,7 @@ void AS::snd_poll(void) {
 		led.set(send);																		// fire the status led
 		pom.stayAwake(100);																	// and stay awake for a short while
 
-		DBG(SN, F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
+		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
 	} else {
 	/* if we are here, message was send one or multiple times and the timeout was raised if an ack where required */
@@ -750,7 +750,7 @@ void AS::snd_poll(void) {
 		led.set(noack);																		// fire the status led
 		pom.stayAwake(100);																	// and stay awake for a short while
 
-		DBG(SN, F("  timed out "), _TIME, '\n');											// some debug
+		DBG_SN(F("  timed out "), _TIME, '\n');											// some debug
 	}
 }
 

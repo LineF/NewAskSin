@@ -797,6 +797,7 @@ void send_POWER_EVENT_CYCLE(uint8_t bidi, cmMaster *channel_module, uint8_t *ptr
 void send_POWER_EVENT(uint8_t bidi, cmMaster *channel_module, uint8_t *ptr_payload) {
 }
 void send_WEATHER_EVENT(cmMaster *channel_module, uint8_t *ptr_payload, uint8_t payload_len) {
+	if (peer_msg.active) return;
 	peer_msg.type = MSG_TYPE::WEATHER_EVENT;
 	peer_msg.peerDB = &channel_module->peerDB;
 	peer_msg.lstP = &channel_module->lstP;
@@ -806,6 +807,7 @@ void send_WEATHER_EVENT(cmMaster *channel_module, uint8_t *ptr_payload, uint8_t 
 	peer_msg.active = MSG_ACTIVE::PEER;
 	peer_msg.max_retr = 3;
 	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, payload_len), '\n');
+	process_peer_message();
 }
 
 /*
