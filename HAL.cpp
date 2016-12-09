@@ -262,7 +262,22 @@ uint16_t getAdcValue(uint8_t adcmux) {
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
-//- system functions -------------------------------------------------------------------------------------------------
+//- randum number functions -----------------------------------------------------------------------------------------------
+void init_random(void) {
+	uint16_t *p = (uint16_t*)(RAMEND + 1);
+	extern uint16_t __heap_start;
+	while (p >= &__heap_start + 1) random_seed ^= *(--p);
+}
+void seed_random(void) {
+	srand(random_seed ^ uint16_t(getMillis() & 0xFFFF));
+}
+void get_random(uint8_t *buf) {
+	seed_random();
+	for (uint8_t i = 0; i < 6; i++) {														// random bytes to the payload
+		buf[i] = (uint8_t)rand();
+	}
+}
+//- -----------------------------------------------------------------------------------------------------------------------
 
 // read factory defined OSCCAL value from signature row (address 0x0001)
 uint8_t getDefaultOSCCAL(void)
