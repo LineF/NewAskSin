@@ -802,7 +802,6 @@ void send_WEATHER_EVENT(cmMaster *channel_module, uint8_t *ptr_payload, uint8_t 
 	peer_msg.active = MSG_ACTIVE::PEER;
 	peer_msg.max_retr = 3;
 	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, payload_len), '\n');
-	process_peer_message();
 }
 
 /*
@@ -869,6 +868,7 @@ void process_peer_message(void) {
 	/* send it as pair message if we have no peer registered */
 	if (!pm->peerDB->used_slots()) {														// if no peer is registered, we send the message to the pair
 		sm->active = MSG_ACTIVE::PAIR;														// should be handled from now on as a pair message
+		sm->mBody.FLAG.WKMEUP = 1;
 		pm->clear();																		// nothing to do here any more, while handled as pair message
 		return;																				// and return, otherwise some infos are overwritten
 	}

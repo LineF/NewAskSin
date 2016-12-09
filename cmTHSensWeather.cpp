@@ -143,6 +143,7 @@ void cmTHSensWeather::cm_poll(void) {
 	
 	//hm.sendINFO_WEATHER_EVENT(lstC.cnl, 0, (uint8_t *)&sensVal, sizeof(sensVal));			// prepare the message and send, burst if burstRx register is set
 	send_WEATHER_EVENT(this, (uint8_t *)&sensVal, sizeof(sensVal));							// prepare the message and send, burst if burstRx register is set
+	process_peer_message();
 }
 
 

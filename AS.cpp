@@ -383,6 +383,9 @@ void AS::process_message(void) {
 		else if (by10 == BY10(MSG_TYPE::INSTRUCTION_SET_TEMP))           pCM->INSTRUCTION_SET_TEMP(&rcv_msg.m1186xx);
 
 	} else if (rcv_msg.mBody.MSG_TYP == BY03(MSG_TYPE::HAVE_DATA)) {
+		snd_msg.mBody.FLAG.WKMEUP= 0;
+		send_ACK();
+		pom.stayAwake(500);
 
 	} else if (rcv_msg.mBody.MSG_TYP == BY03(MSG_TYPE::SWITCH)) {
 		/* to process this message we need to load the right list table for the respective peer index into memory
