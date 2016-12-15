@@ -20,6 +20,7 @@
 *        Setup of class specific things is done here
 */
 #include "cmTHSensWeather.h"
+#include "AS.h"
 
 cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 	DBG(TH, F("TH.\n"));

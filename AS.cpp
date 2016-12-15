@@ -439,8 +439,8 @@ void AS::snd_poll(void) {
 	/* can only happen while an ack was received and AS:processMessage had send the retr_cnt to 0xff */
 	if (sm->retr_cnt == 0xff) {
 		sm->clear();																		// nothing to do any more
-		led.set(ack);																		// fire the status led
-		pom.stayAwake(100);																	// and stay awake for a short while
+		if (!led.active)
+			led.set(ack);																	// fire the status led
 		return;
 	}
 
@@ -521,8 +521,8 @@ void AS::snd_poll(void) {
 		sm->retr_cnt++;																		// remember that we had send the message
 
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
-		led.set(send);																		// fire the status led
-		pom.stayAwake(100);																	// and stay awake for a short while
+		if (!led.active)
+			led.set(send);																	// fire the status led
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
@@ -535,7 +535,6 @@ void AS::snd_poll(void) {
 
 		sm->timeout = 1;																	// set the time out only while an ACK or answer was requested
 		led.set(noack);																		// fire the status led
-		pom.stayAwake(100);																	// and stay awake for a short while
 
 		DBG_SN(F("  timed out "), _TIME, '\n');											// some debug
 	}

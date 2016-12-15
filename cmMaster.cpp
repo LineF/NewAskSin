@@ -526,8 +526,8 @@ void send_DEVICE_INFO(MSG_REASON::E reason) {
 	/* BIDI is asked all time, will removed automatically if MAID is empty */
 	snd_msg.type = MSG_TYPE::DEVICE_INFO;													// length and flags are set within the snd_msg struct
 
-	//pair_mode.active = 1;																	// set pairing flag
-	//pair_mode.timer.set(20000);															// set pairing time
+	pair_mode.active = 1;																	// set pairing flag
+	pair_mode.timer.set(20000);																// set pairing time
 	led.set(pairing);																		// and visualize the status
 }
 /**
@@ -908,6 +908,7 @@ void process_list_message(void) {
 		payload_len = lm->list->get_slice_pairs(lm->peer_idx, lm->cur_slc, sm->buf + 11);	// get the slice and the amount of bytes
 		if (payload_len == 2) sm->type = MSG_TYPE::INFO_PARAM_RESPONSE_SEQ;					// if it is a message with only terminating 00 00 then it is a INFO_PARAM_RESPONSE_SEQ
 		else sm->type = MSG_TYPE::INFO_PARAM_RESPONSE_PAIRS;								// otherwise we send a INFO_PARAM_RESPONSE_PAIRS
+		sm->mBody.FLAG.WKMEUP = 1;
 		//DBG(SN, F("SN:LIST_ANSWER::PARAM_RESPONSE_PAIRS cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
 		lm->cur_slc++;																		// increase slice counter
 
@@ -923,6 +924,7 @@ void process_list_message(void) {
 		//DBG(SN, F("SN:LIST_ANSWER::DONE cur_slc:"), cl->cur_slc, F(", max_slc:"), cl->max_slc, F(", pay_len:"), payload_len, '\n');
 		lm->active = LIST_ANSWER::NONE;
 		lm->cur_slc = 0;
+		sm->mBody.FLAG.WKMEUP = 1;
 	}
 	//hm.snd_poll();
 }
