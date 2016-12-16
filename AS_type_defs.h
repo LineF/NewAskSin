@@ -6,8 +6,8 @@
 //- global definition of type definition beside messages
 //- -----------------------------------------------------------------------------------------------------------------------
 
-#include "HAL.h"
 #include "00_debug-flag.h"
+#include "HAL.h"
 #include "wait_timer.h"
 #include "AS_enum_defs.h"
 #include "AS_message_defs.h"
@@ -320,6 +320,7 @@ typedef struct ts_receive_message {
 */
 typedef struct ts_send_message {
 	MSG_ACTIVE::E active;				// flag that something is to process
+	MSG_TYPE::E  type;					// set the message type for further processing in send function
 
 	union {
 		uint8_t buf[MaxDataLen];		// initial buffer for messages to send
@@ -380,7 +381,7 @@ typedef struct ts_send_message {
 		s_m5fxxxx m5fxxxx;				// POWER_EVENT message
 		s_m70xxxx m70xxxx;				// WEATHER_EVENT message	
 	};
-	uint8_t   prev_buf[32];				// store the last receive message to verify with AES signed data.
+	//uint8_t   prev_buf[32];				// store the last receive message to verify with AES signed data.
 
 	uint8_t   timeout;					// was last message a timeout
 	uint8_t   retr_cnt;					// variable to count how often a message was already send
@@ -391,8 +392,6 @@ typedef struct ts_send_message {
 	uint8_t   max_retr;					// how often a message has to be send until ACK - info is set by cmMaintenance
 	uint16_t  max_time;					// max time for message timeout timer - info is set by  cmMaintenance
 	waitTimer timer;					// send mode timeout
-
-	MSG_TYPE::E  type;					// set the message type for further processing in send function
 
 	void clear() {						// function to reset flags
 		active = MSG_ACTIVE::NONE;
