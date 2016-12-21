@@ -528,7 +528,7 @@ void send_DEVICE_INFO(MSG_REASON::E reason) {
 
 	pair_mode.active = 1;																	// set pairing flag
 	pair_mode.timer.set(20000);																// set pairing time
-	led.set(pairing);																		// and visualize the status
+	led->set(pairing);																		// and visualize the status
 }
 /**
 * @brief Check if ACK required and send ACK or NACK
@@ -577,7 +577,7 @@ void send_ACK_STATUS(uint8_t chnl, uint8_t stat, uint8_t actn) {
 	msg->MSG_STATUS = stat;
 	*(uint8_t*)&msg->MSG_FLAG = actn;
 	msg->MSG_FLAG.LOWBAT = bat.getStatus();
-	msg->MSG_RSSI = hm.cc.rssi;
+	msg->MSG_RSSI = com->rssi;
 
 	snd_msg.active = MSG_ACTIVE::ANSWER;													// for address, counter and to make it active
 	snd_msg.type = MSG_TYPE::ACK_STATUS;													// length and flags are set within the snd_msg struct
@@ -727,12 +727,11 @@ void send_INFO_PARAMETER_CHANGE() {
 void send_INFO_ACTUATOR_STATUS(uint8_t cnl, uint8_t stat, uint8_t flag) {
 	s_m1006xx *msg = &snd_msg.m1006xx;														// struct is easier to fill
 	s_mBody *rcvBody = &rcv_msg.mBody;														// short hand to received string
-	uint8_t bidi = 0;																		// per default we don't need an ACK
 
 	msg->MSG_CNL = cnl;																		// copy in the channel
 	msg->MSG_STAT = stat;																	// the status of the channel
 	msg->UNKNOWN = flag;																	// needs investigation
-	msg->MSG_RSSI = hm.cc.rssi;																// received rssi value
+	msg->MSG_RSSI = com->rssi;																// received rssi value
 
 	snd_msg.active = MSG_ACTIVE::PAIR;														// for address, counter and to make it active
 	snd_msg.type = MSG_TYPE::INFO_ACTUATOR_STATUS;											// length and flags are set within the snd_msg struct

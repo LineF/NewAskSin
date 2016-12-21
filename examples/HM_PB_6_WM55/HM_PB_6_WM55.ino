@@ -7,6 +7,7 @@
 #include "register.h"																			// configuration sheet
 
 
+
 //- arduino functions -----------------------------------------------------------------------------------------------------
 void setup() {
 	// - Hardware setup ---------------------------------------
@@ -26,11 +27,18 @@ void setup() {
 	DBG_START(SER, F("HM_PB_6_WM55\n"));
 	DBG(SER, F(LIB_VERSION_STRING));
 
-
 	// - AskSin related ---------------------------------------
 	hm.init();																					// init the asksin framework
-	DBG(SER, F("HMID: "), _HEX(dev_ident.HMID, 3), F(", MAID: "), _HEX(dev_operate.MAID, 3), F(", CNL: "), cnl_max, F("\n\n"));	// some debug
 
+
+//	for (uint8_t i = 0; i < 10; i++) {
+//		uint8_t len = _PGM_BYTE(led->ptr_pat[i].len);
+//		uint8_t dur = _PGM_BYTE(led->ptr_pat[i].dur);
+//		uint8_t led0 = _PGM_BYTE(led->ptr_pat[i].led0);
+//		uint8_t led1 = _PGM_BYTE(led->ptr_pat[i].led1);
+//		dbg << i << ": " << len << ", " << dur << ", " << led0 << ", " << led1 << '\n';
+//	}
+	
 	// - user related -----------------------------------------
 	sei();																						// enable interrupts
 }
@@ -47,7 +55,7 @@ void loop() {
 //- user functions --------------------------------------------------------------------------------------------------------
 void cmRemote::initRemote(uint8_t channel) {
 	// setting the essentials for the respective remote channel if necassary
-	DBG(SER, F("initRemote: "), channel, '\n');
+	DBG(RE, F("initRemote: "), channel, '\n');
 
 }
 
