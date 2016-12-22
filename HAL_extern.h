@@ -20,7 +20,7 @@ extern void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag);
 * @brief Definition of the blink pattern for the LED module. Reason for defining it here is the 
 * limitation of Arduino while #defines from sketch area not seen in library folder
 */
-#if   defined(LED_RED) && defined(LED_GRN)														// two leds defined  
+/*#if   defined(LED_RED) && defined(LED_GRN)														// two leds defined  
 //LD ld;				///< status led
 
 const struct s_blPat blPat[] PROGMEM = {														// definition of struct and functionallity can be seen in StatusLed.h
@@ -50,12 +50,12 @@ const struct s_blPat blPat[] PROGMEM = {																// definition of struct 
 };
 #else																							// no led defined
 const struct s_blPat blPat[1] PROGMEM;															// definition of struct and functionallity can be seen in StatusLed.h
-#endif
+#endif*/
 
 /**
 * @brief Initialize the led pins, but only if there are some defined.
 */
-void    initLeds(void) {
+/*void    initLeds(void) {
 	#ifdef LED_RED																				// check if the LED is defined
 		SET_PIN_OUTPUT(LED_RED);																// set the led pins in port
 		if (LED_ACTIVE_LOW) SET_PIN_HIGH(LED_RED);												// if the led is connected against VCC, set it high, or off
@@ -64,13 +64,13 @@ void    initLeds(void) {
 		SET_PIN_OUTPUT(LED_GRN);																// set the led pins in port
 		if (LED_ACTIVE_LOW) SET_PIN_HIGH(LED_GRN);												// if the led is connected against VCC, set it high, or off
 	#endif
-}
+}*/
 
 /**
 * @brief Set led status, on or off or toogle, but only if they are defined
 * @param  stat   1 for on, 0 for off, any other value to toogle 
 */
-void    ledRed(uint8_t stat) {
+/*void    ledRed(uint8_t stat) {
 	#ifdef LED_RED																				// check if the LED is defined
 		stat ^= LED_ACTIVE_LOW;																	// xor the stat with LED_ACTIVE_LOW to set the right status if the led is connected against VCC
 		if (stat == 1) SET_PIN_HIGH(LED_RED);
@@ -85,7 +85,7 @@ void    ledGrn(uint8_t stat) {
 		else if (stat == 0) SET_PIN_LOW(LED_GRN);
 		else                SET_PIN_TOOGLE(LED_GRN);
 	#endif
-}
+}*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 

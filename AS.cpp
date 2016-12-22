@@ -83,7 +83,6 @@ void AS::init(void) {
 	}
 
 	/* - Initialize the hardware. All this functions are defined in HAL.h and HAL_extern.h 	*/
-	initLeds();																				// initialize the leds
 	initMillis();																			// start the millis counter
 	
 	com->init();																			// init the rf module
@@ -98,7 +97,9 @@ void AS::init(void) {
 
 	/* - add this function in register.h to setup default values every start */
 	everyTimeStart();
-	led->set(welcome);																		// show something as status
+
+	led->init();																			// initialize the leds
+	led->set(LED_STAT::WELCOME);															// show something as status
 }
 
 /**
@@ -141,7 +142,7 @@ void AS::poll(void) {
 	if (pair_mode.active) { 
 		if (pair_mode.timer.done()) {
 			pair_mode.active = 0;
-			isEmpty(dev_operate.MAID, 3)? led->set(pair_err) : led->set(pair_suc);
+			isEmpty(dev_operate.MAID, 3)? led->set(LED_STAT::PAIR_ERROR) : led->set(LED_STAT::PAIR_SUCCESS);
 		}
 	}
 
@@ -450,7 +451,7 @@ void AS::snd_poll(void) {
 	if (sm->retr_cnt == 0xff) {
 		sm->clear();																		// nothing to do any more
 		if (!led->active)
-			led->set(ack);																	// fire the status led
+			led->set(LED_STAT::GOT_ACK);													// fire the status led
 		return;
 	}
 
@@ -532,7 +533,7 @@ void AS::snd_poll(void) {
 
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
 		if (!led->active)
-			led->set(send);																	// fire the status led
+			led->set(LED_STAT::SEND_MSG);													// fire the status led
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
@@ -544,7 +545,7 @@ void AS::snd_poll(void) {
 		if (!sm->mBody.FLAG.BIDI) return;													// everything fine, ACK was not required
 
 		sm->timeout = 1;																	// set the time out only while an ACK or answer was requested
-		led->set(noack);																	// fire the status led
+		led->set(LED_STAT::GOT_NACK);														// fire the status led
 
 		DBG_SN(F("  timed out "), _TIME, '\n');											// some debug
 	}
