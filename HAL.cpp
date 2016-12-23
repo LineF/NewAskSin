@@ -11,34 +11,13 @@
 #include "00_debug-flag.h"
 
 
-//- eeprom functions ------------------------------------------------------------------------------------------------------
-void initEEProm(void) {
-	// place the code to init a i2c eeprom
-}
-void getEEPromBlock(uint16_t addr, uint8_t len, void *ptr) {
-	eeprom_read_block((void*)ptr, (const void*)addr, len);									// AVR GCC standard function
-//dbg << "getEEPromBlock:" << addr << ", len:" << len << ", data:" << _HEX((uint8_t*)ptr, len) << '\n';
-}
-void setEEPromBlock(uint16_t addr, uint8_t len, void *ptr) {
-	eeprom_write_block((const void*)ptr, (void*)addr, len);									// AVR GCC standard function
-//dbg << "setEEPromBlock:" << addr << ", len:" << len << ", data:" << _HEX((uint8_t*)ptr, len) << '\n';
-}
-void clearEEPromBlock(uint16_t addr, uint16_t len) {
-	uint8_t tB = 0;
-	if (!len) return;
-	for (uint16_t l = 0; l < len; l++) {													// step through the bytes of eeprom
-		setEEPromBlock(addr + l, 1, (void*)&tB);
-	}
-	//dbg << "clearEEPromBlock:" << addr << ", len:" << len << '\n';
-}
-//- -----------------------------------------------------------------------------------------------------------------------
 
 
 //- randum number functions -----------------------------------------------------------------------------------------------
 void get_random(uint8_t *buf) {
 	/* not random, but most likely, as real random takes 200 byte more */
 
-	uint32_t time = getMillis();												// get current time 
+	uint32_t time = get_millis();												// get current time 
 	memcpy(buf, (uint8_t*)&time, 4);											// copy the time into the array
 	memcpy(buf + 2, (uint8_t*)&time, 4);
 	for (uint8_t i = 0; i < 6; i++) {											// do some xors and byte shift
@@ -167,7 +146,7 @@ void    setSleepMode() {
 
 ISR(WDT_vect) {
 	// nothing to do, only for waking up
-	addMillis(wdtSleep_TIME);
+	add_millis(wdtSleep_TIME);
 	wdt_int = 1;
 }
 #endif
@@ -193,46 +172,46 @@ void    setSleep(void) {
 
 
 //- timer functions -------------------------------------------------------------------------------------------------------
-static volatile tMillis milliseconds;
-#ifdef LOW_FREQ_OSC
-static volatile uint32_t freq_corr;
-#endif
-void    initMillis() {
-	SET_TCCRA();
-	SET_TCCRB();
-	REG_TIMSK = _BV(BIT_OCIE);
-#ifdef LOW_FREQ_OSC
-	startTimer1ms();
-	while (ASSR & _BV(TCR2AUB))
-		;
-#else
-	REG_OCR = ((F_CPU / PRESCALER) / 1000) - 1;												// as of atmel docu: ocr should be one less than divider
-#endif
-}
-tMillis getMillis() {
-	tMillis ms;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		ms = milliseconds;
-	}
-	return ms;
-}
-void    addMillis(tMillis ms) {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		milliseconds += ms;
-	}
-}
-ISR(ISR_VECT) {
-#ifdef LOW_FREQ_OSC
-	freq_corr += ocrCorrCnt;
-	if (freq_corr >= FREQ_MAX_CORR)
-		freq_corr -= FREQ_MAX_CORR;
-	else
-		milliseconds += ocrSleep_TIME;
-#else
-	milliseconds += 1;
-	//setPinCng(LED_RED_PORT, LED_RED_PIN);													// for generating a 1 KHz signal on LED pin to calibrate CPU
-#endif
-}
+//static volatile tMillis milliseconds;
+//#ifdef LOW_FREQ_OSC
+//static volatile uint32_t freq_corr;
+//#endif
+//void    initMillis() {
+//	SET_TCCRA();
+//	SET_TCCRB();
+//	REG_TIMSK = _BV(BIT_OCIE);
+//#ifdef LOW_FREQ_OSC
+//	startTimer1ms();
+//	while (ASSR & _BV(TCR2AUB))
+//		;
+//#else
+//	REG_OCR = ((F_CPU / PRESCALER) / 1000) - 1;												// as of atmel docu: ocr should be one less than divider
+//#endif
+//}
+//tMillis getMillis() {
+//	tMillis ms;
+//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//		ms = milliseconds;
+//	}
+//	return ms;
+//}
+//void    addMillis(tMillis ms) {
+//	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+//		milliseconds += ms;
+//	}
+//}
+//ISR(ISR_VECT) {
+//#ifdef LOW_FREQ_OSC
+//	freq_corr += ocrCorrCnt;
+//	if (freq_corr >= FREQ_MAX_CORR)
+//		freq_corr -= FREQ_MAX_CORR;
+//	else
+//		milliseconds += ocrSleep_TIME;
+//#else
+//	milliseconds += 1;
+//	//setPinCng(LED_RED_PORT, LED_RED_PIN);													// for generating a 1 KHz signal on LED pin to calibrate CPU
+//#endif
+//}
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
