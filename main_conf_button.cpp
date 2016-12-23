@@ -13,7 +13,7 @@
 
 
 // public:		//---------------------------------------------------------------------------------------------------------
-CBN::CBN(uint8_t mode = 0) {
+CBN::CBN(uint8_t mode) {
 	button_check.configured = 0;															// poll the pin make only sense if it was configured, store result here
 	button_check.scenario = mode;
 }

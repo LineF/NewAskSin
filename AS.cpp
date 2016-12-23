@@ -450,8 +450,7 @@ void AS::snd_poll(void) {
 	/* can only happen while an ack was received and AS:processMessage had send the retr_cnt to 0xff */
 	if (sm->retr_cnt == 0xff) {
 		sm->clear();																		// nothing to do any more
-		if (!led->active)
-			led->set(LED_STAT::GOT_ACK);													// fire the status led
+		led->set(LED_STAT::GOT_ACK);														// fire the status led
 		return;
 	}
 
@@ -532,8 +531,7 @@ void AS::snd_poll(void) {
 		sm->retr_cnt++;																		// remember that we had send the message
 
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
-		if (!led->active)
-			led->set(LED_STAT::SEND_MSG);													// fire the status led
+		led->set(LED_STAT::SEND_MSG);														// fire the status led
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 

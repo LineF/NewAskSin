@@ -20,6 +20,7 @@
 //- pin definition ----------------------------------------------------------------------------------------------------------
 #define PCINT_PCIE_SIZE        3																// amount of pin change interrupt vectors
 
+const s_pin_def pin_D3 = { PORTD3, &DDRD, &PORTD, &PIND, 19, PCINT19, &PCICR, &PCMSK2, PCIE2, 2 };
 const s_pin_def pin_D4 = { PORTD4, &DDRD, &PORTD, &PIND, 20, PCINT20, &PCICR, &PCMSK2, PCIE2, 2 }; 
 const s_pin_def pin_D6 = { PORTD6, &DDRD, &PORTD, &PIND, 22, PCINT22, &PCICR, &PCMSK2, PCIE2, 2 }; 
 
