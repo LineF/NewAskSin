@@ -15,7 +15,9 @@
 #endif
 
 #include <stdint.h>
+//#include <avr/common.h>
 
+#include "hardware.h"
 
 #include "macros.h"
 
@@ -137,8 +139,34 @@ void get_random(uint8_t *buf);
 
 
 
-	static uint16_t wdtSleep_TIME;
+	//static uint16_t wdtSleep_TIME;
 
+	//- timer functions -------------------------------------------------------------------------------------------------------
+	// https://github.com/zkemble/millis/blob/master/millis/
+	#ifdef LOW_FREQ_OSC
+		#define REG_TCCRA		TCCR2A
+		#define REG_TCCRB		TCCR2B
+		#define REG_TIMSK		TIMSK2
+		#define REG_OCR			OCR2A
+		#define BIT_OCIE		OCIE2A
+		#define BIT_WGM			WGM21
+		#define PRESC_32		(_BV(CS21)|_BV(CS20))
+		#define PRESC_1024		(_BV(CS22)|_BV(CS21)|_BV(CS20))
+		#define CLOCKSEL        PRESC_32
+		#define ISR_VECT		TIMER2_COMPA_vect
+		#define FREQ_CORR_FACT	234375L
+		#define FREQ_MAX_CORR	10000000L
+	#else
+		#define REG_TCCRA		TCCR0A
+		#define REG_TCCRB		TCCR0B
+		#define REG_TIMSK		TIMSK0
+		#define REG_OCR			OCR0A
+		#define BIT_OCIE		OCIE0A
+		#define BIT_WGM			WGM01
+		#define CLOCKSEL        (_BV(CS01)|_BV(CS00))
+		#define PRESCALER       64
+		#define ISR_VECT		TIMER0_COMPA_vect
+	#endif
 
 
 
@@ -156,15 +184,22 @@ void get_random(uint8_t *buf);
 
 
 	//- power management functions --------------------------------------------------------------------------------------------
-	extern void    startWDG32ms(void);
-	extern void    startWDG64ms(void);
-	extern void    startWDG250ms(void);
-	extern void    startWDG8000ms(void);
+	extern void    startTimer1ms(void);
+	extern void    startTimer32ms(void);
+	extern void    startTimer64ms(void);
+	extern void    startTimer250ms(void);
+	extern void    startTimer8000ms(void);
 	extern void    setSleep(void);
+	extern void    setSleepMode();
 
+	#ifdef LOW_FREQ_OSC
+	#else
+	extern uint16_t wdt_cal_ms;
+
+	extern void    calibrateWatchdog();
 	extern void    startWDG();
 	extern void    stopWDG();
-	extern void    setSleepMode();
+	#endif
 	//- -----------------------------------------------------------------------------------------------------------------------
 
 

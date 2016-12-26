@@ -174,13 +174,23 @@ static volatile uint32_t milliseconds;
 #define ISR_VECT		TIMER2_COMPA_vect
 #endif
 
+#ifdef LOW_FREQ_OSC
+static volatile uint32_t freq_corr;
+#endif
+
 
 void init_millis(void) {														
 	POW_ENABLE;
 	REG_TCRA;
 	REG_TCRB;
 	REG_TMSK;
+#ifdef LOW_FREQ_OSC
+	startTimer1ms();
+	while (ASSR & _BV(TCR2AUB))
+		;
+#else
 	REG_OCRA;
+#endif
 }
 
 uint32_t get_millis(void) {
@@ -198,7 +208,15 @@ void add_millis(uint32_t ms) {
 }
 
 ISR(ISR_VECT) {
-	++milliseconds;
+#ifdef LOW_FREQ_OSC
+	freq_corr += ocrCorrCnt;
+	if (freq_corr >= FREQ_MAX_CORR)
+		freq_corr -= FREQ_MAX_CORR;
+	else
+		milliseconds += ocrSleep_TIME;
+#else
+	milliseconds += 1;
+#endif
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 

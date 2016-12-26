@@ -39,47 +39,100 @@ void get_random(uint8_t *buf) {
 //- power management functions --------------------------------------------------------------------------------------------
 // http://donalmorrissey.blogspot.de/2010/04/sleeping-arduino-part-5-wake-up-via.html
 // http://www.mikrocontroller.net/articles/Sleep_Mode#Idle_Mode
-void    startWDG32ms(void) {
+
+#ifdef LOW_FREQ_OSC
+//static volatile uint8_t wdt_int;
+uint32_t ocrCorrCnt;
+uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not needed
+
+void writeOCR2A(uint8_t val) {
+	OCR2A = val;
+	while (ASSR & _BV(OCR2AUB))
+		;
+}
+void writePRESC(uint8_t val) {
+	TCCR2B = TCCR2B & ~(_BV(CS22)|_BV(CS21)|_BV(CS20)) | val;
+	while (ASSR & _BV(TCR2BUB))
+		;
+}
+void startTimer1ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(0);
+	ocrSleep_TIME = 1;
+	ocrCorrCnt = FREQ_CORR_FACT;
+}
+void startTimer32ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(31);
+	ocrSleep_TIME = 32;
+	ocrCorrCnt = 32 * FREQ_CORR_FACT;
+}
+void startTimer64ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(63);
+	ocrSleep_TIME = 64;
+	ocrCorrCnt = 64 * FREQ_CORR_FACT;
+}
+void startTimer250ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(255);
+	ocrSleep_TIME = 250;
+	ocrCorrCnt = 0;
+}
+void startTimer8000ms(void) {
+	writePRESC(PRESC_1024);
+	writeOCR2A(255);
+	ocrSleep_TIME = 8000;
+	ocrCorrCnt = 0;
+}
+void setSleepMode() {
+	set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+}
+
+#else
+
+static uint16_t wdtSleep_TIME;
+static volatile uint8_t wdt_int;
+uint16_t wdt_cal_ms;															// uint16 is enough - 32 bit here not needed
+
+void    startTimer32ms(void) {
 	WDTCSR |= (1<<WDCE) | (1<<WDE);
 	WDTCSR = (1<<WDIE) | (1<<WDP0);
-	wdtSleep_TIME = 32;
+	wdtSleep_TIME = wdt_cal_ms / 8;
 }
-void    startWDG64ms(void) {
+void    startTimer64ms(void) {
 	WDTCSR |= (1<<WDCE) | (1<<WDE);
 	WDTCSR = (1<<WDIE) | (1<<WDP1);
-	wdtSleep_TIME = 64;
+	wdtSleep_TIME = wdt_cal_ms / 4;
 }
-void    startWDG250ms(void) {
+void    startTimer250ms(void) {
 	WDTCSR |= (1<<WDCE) | (1<<WDE);
 	WDTCSR = (1<<WDIE) | (1<<WDP2);
-	wdtSleep_TIME = 256;
+	wdtSleep_TIME = wdt_cal_ms;
 }
-void    startWDG8000ms(void) {
+void    startTimer8000ms(void) {
 	WDTCSR |= (1<<WDCE) | (1<<WDE);
 	WDTCSR = (1<<WDIE) | (1<<WDP3) | (1<<WDP0);
-	wdtSleep_TIME = 8192;
-}
-void    setSleep(void) {
-	//dbg << ',';																// some debug
-	//_delay_ms(10);															// delay is necessary to get it printed on the console before device sleeps
-	//_delay_ms(100);
-
-	// some power savings by switching off some CPU functionality
-	ADCSRA = 0;																	// disable ADC
-	backupPwrRegs();															// save content of power reduction register and set it to all off
-
-	sleep_enable();																// enable sleep
-	offBrownOut();																// turn off brown out detection
-
-	sleep_cpu();																// goto sleep
-	// sleeping now
-	// --------------------------------------------------------------------------------------------------------------------
-	// wakeup will be here
-	sleep_disable();															// first thing after waking from sleep, disable sleep...
-	recoverPwrRegs();															// recover the power reduction register settings
-	//dbg << '.';																// some debug
+	wdtSleep_TIME = wdt_cal_ms * 32;
 }
 
+void	calibrateWatchdog() {													// initMillis() must have been called yet
+	uint8_t sreg = SREG;														// remember interrupt state (sei / cli)
+	wdt_cal_ms = 0;
+	startTimer250ms();
+
+	uint16_t startMillis = getMillis();
+	wdt_int = 0;
+	wdt_reset();
+	sei();
+	
+	while(!wdt_int)																// wait for watchdog interrupt
+		;
+	SREG = sreg;																// restore previous interrupt state
+	wdt_cal_ms = getMillis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
+	stopWDG();
+	DBG(SER, F("wdt_cal: "), wdt_cal_ms, F("\n"));
+}
 void    startWDG() {
 	WDTCSR = (1<<WDIE);
 }
@@ -93,6 +146,26 @@ void    setSleepMode() {
 ISR(WDT_vect) {
 	// nothing to do, only for waking up
 	add_millis(wdtSleep_TIME);
+	wdt_int = 1;
+}
+#endif
+void    setSleep(void) {
+	// some power savings by switching off some CPU functionality
+	ADCSRA = 0;																	// disable ADC
+	DIDR1 |= _BV(AIN0D) | _BV(AIN1D);											// switch off analog comparator input buffers
+	DIDR0 |= _BV(ADC0D) | _BV(ADC1D) | _BV(ADC2D) | _BV(ADC3D)
+		   | _BV(ADC4D) | _BV(ADC5D);											// switch off adc input buffers
+	backupPwrRegs();															// save content of power reduction register and set it to all off
+
+	sleep_enable();																// enable sleep
+	offBrownOut();																// turn off brown out detection
+
+	sleep_cpu();																// goto sleep
+	// sleeping now
+	// --------------------------------------------------------------------------------------------------------------------
+	// wakeup will be here
+	sleep_disable();															// first thing after waking from sleep, disable sleep...
+	recoverPwrRegs();															// recover the power reduction register settings
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
