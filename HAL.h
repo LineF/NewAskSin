@@ -19,7 +19,7 @@
 #include <stdint.h>
 //#include <avr/common.h>
 
-//#include "hardware.h"
+#include "hardware.h"
 
 #include "macros.h"
 
@@ -101,7 +101,7 @@ void get_random(uint8_t *buf);
 
 
 
-	static uint16_t wdtSleep_TIME;
+	//static uint16_t wdtSleep_TIME;
 
 	//- timer functions -------------------------------------------------------------------------------------------------------
 	// https://github.com/zkemble/millis/blob/master/millis/

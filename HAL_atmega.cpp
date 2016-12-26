@@ -82,9 +82,9 @@ ISR(PCINT2_vect) {
 	maintain_PCINT(2);
 }
 
-ISR(PCINT3_vect) {
-	maintain_PCINT(3);
-}
+//ISR(PCINT3_vect) {
+//	maintain_PCINT(3);
+//}
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -150,7 +150,7 @@ static volatile uint32_t milliseconds;
 #define ISR_VECT		TIMER1_COMPA_vect
 #endif
 
-#ifdef TIMER2
+#ifdef TIMER2_Pn
 #define REG_TCRA        ( TCCR2A = _BV(WGM21) )
 #define REG_TCRB        ( TCCR2B = (_BV(CS21) | _BV(CS20)) )
 #define REG_OCRA        ( OCR2A = ((F_CPU / 32) / 1000) )
