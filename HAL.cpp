@@ -41,7 +41,7 @@ void get_random(uint8_t *buf) {
 // http://donalmorrissey.blogspot.de/2010/04/sleeping-arduino-part-5-wake-up-via.html
 // http://www.mikrocontroller.net/articles/Sleep_Mode#Idle_Mode
 
-#ifdef LOW_FREQ_OSC
+#ifdef TIMER2_LOW_FREQ_OSC
 //static volatile uint8_t wdt_int;
 uint32_t ocrCorrCnt;
 uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not needed

@@ -65,7 +65,7 @@ void clear_eeprom(uint16_t addr, uint16_t len);
 
 //-- timer functions ------------------------------------------------------------------------------------------------------
 // https://github.com/zkemble/millis/blob/master/millis/
-#define TIMER2_Pn
+#define TIMER2_LOW_FREQ_OSC
 void init_millis(void);
 uint32_t get_millis(void);
 void add_millis(uint32_t ms);

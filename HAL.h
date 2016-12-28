@@ -143,7 +143,7 @@ void get_random(uint8_t *buf);
 
 	//- timer functions -------------------------------------------------------------------------------------------------------
 	// https://github.com/zkemble/millis/blob/master/millis/
-	#ifdef LOW_FREQ_OSC
+	#ifdef TIMER2_LOW_FREQ_OSC
 		#define REG_TCCRA		TCCR2A
 		#define REG_TCCRB		TCCR2B
 		#define REG_TIMSK		TIMSK2
@@ -170,7 +170,6 @@ void get_random(uint8_t *buf);
 
 
 
-
 	//- needed for 32u4 to prevent sleep, while USB didn't work in sleep ------------------------------------------------------
 	extern void    initWakeupPin(void);															// init the wakeup pin
 	extern uint8_t checkWakeupPin(void);														// we can setup a pin which avoid sleep mode
@@ -192,7 +191,7 @@ void get_random(uint8_t *buf);
 	extern void    setSleep(void);
 	extern void    setSleepMode();
 
-	#ifdef LOW_FREQ_OSC
+	#ifdef TIMER2_LOW_FREQ_OSC
 	#else
 	extern uint16_t wdt_cal_ms;
 

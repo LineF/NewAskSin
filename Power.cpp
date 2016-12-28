@@ -121,7 +121,7 @@ void PW::poll(void) {
 	/*************************
 	 * Wake up at this point *
 	 *************************/
-	#ifdef LOW_FREQ_OSC
+	#ifdef TIMER2_LOW_FREQ_OSC
 		startTimer1ms();
 	#else
 	if (pwrMode != POWER_MODE_WAKEUP_EXT_INT) {
