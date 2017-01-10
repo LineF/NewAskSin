@@ -45,6 +45,7 @@ uint8_t get_pin_status(const s_pin_def *ptr_pin);
 #define DEBOUNCE  5
 void register_PCINT(const s_pin_def *ptr_pin);
 uint8_t check_PCINT(const s_pin_def *ptr_pin, uint8_t debounce);
+// pointer for callback defined in HAL_<vendor>.cpp
 void maintain_PCINT(uint8_t vec);
 //- -----------------------------------------------------------------------------------------------------------------------
 
@@ -66,7 +67,7 @@ void clear_eeprom(uint16_t addr, uint16_t len);
 //-- timer functions ------------------------------------------------------------------------------------------------------
 // https://github.com/zkemble/millis/blob/master/millis/
 #define TIMER2_LOW_FREQ_OSC
-void init_millis(void);
+void init_millis(uint8_t timer);
 uint32_t get_millis(void);
 void add_millis(uint32_t ms);
 //- -----------------------------------------------------------------------------------------------------------------------
