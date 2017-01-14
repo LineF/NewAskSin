@@ -6,8 +6,8 @@
 * - -----------------------------------------------------------------------------------------------------------------------
 */
 
-#include "00_debug-flag.h"
-#include "as_main.h"
+#include "newasksin.h"
+
 
 /**------------------------------------------------------------------------------------------------------------------------
 *- mandatory functions for every new module to communicate within HM protocol stack -
@@ -18,7 +18,7 @@
 *        Constructor of master class is processed first.
 *        Setup of class specific things is done here
 */
-#include "cmRemote.h"
+#include "cm_remote.h"
 
 /**
 * @brief This function has to be called to handover all pin information to initialize the hardware port/pin
@@ -28,46 +28,54 @@
 * In such a case you can call the buttonAction() directly from user sketch.
 * @param   port/pin information    PIN_C2
 */
-cmRemote::cmRemote(const uint8_t peer_max, const s_pin_def *ptr_key_pin) : cmMaster(peer_max) {
+CM_REMOTE::CM_REMOTE(const uint8_t peer_max, const s_pin_def *ptr_key_pin) : CM_MASTER(peer_max) {
 	key_pin = ptr_key_pin;
 
 	lstC.lst = 1;																			// setup the channel list with all dependencies
-	lstC.reg = cmRemote_ChnlReg;
-	lstC.def = cmRemote_ChnlDef;
-	lstC.len = sizeof(cmRemote_ChnlReg);
+	lstC.reg = cm_remote_ChnlReg;
+	lstC.def = cm_remote_ChnlDef;
+	lstC.len = sizeof(cm_remote_ChnlReg);
 
 	lstP.lst = 4;																			// setup the peer list with all dependencies
-	lstP.reg = cmRemote_PeerReg;
-	lstP.def = cmRemote_PeerDef;
-	lstP.len = sizeof(cmRemote_PeerReg);
+	lstP.reg = cm_remote_PeerReg;
+	lstP.def = cm_remote_PeerDef;
+	lstP.len = sizeof(cm_remote_PeerReg);
 
-	lstC.val = new uint8_t[lstC.len];														// create and allign the value arrays
-	lstP.val = new uint8_t[lstP.len];
+	static uint8_t lstCval[sizeof(cm_remote_ChnlReg)];
+	lstC.val = lstCval;
+	//lstC.val = new uint8_t[lstC.len];														// create and allign the value arrays
+	static uint8_t lstPval[sizeof(cm_remote_PeerReg)];
+	lstP.val = lstPval;
+	//lstP.val = new uint8_t[lstP.len];
 
 	l1 = (s_l1*)lstC.val;																	// set list structures to something useful
 	l4 = (s_l4*)lstP.val;
 }
 
-cmRemote::cmRemote(const uint8_t peer_max) : cmMaster(peer_max) {
+CM_REMOTE::CM_REMOTE(const uint8_t peer_max) : CM_MASTER(peer_max) {
 
 	lstC.lst = 1;																			// setup the channel list with all dependencies
-	lstC.reg = cmRemote_ChnlReg;
-	lstC.def = cmRemote_ChnlDef;
-	lstC.len = sizeof(cmRemote_ChnlReg);
+	lstC.reg = cm_remote_ChnlReg;
+	lstC.def = cm_remote_ChnlDef;
+	lstC.len = sizeof(cm_remote_ChnlReg);
 
 	lstP.lst = 4;																			// setup the peer list with all dependencies
-	lstP.reg = cmRemote_PeerReg;
-	lstP.def = cmRemote_PeerDef;
-	lstP.len = sizeof(cmRemote_PeerReg);
+	lstP.reg = cm_remote_PeerReg;
+	lstP.def = cm_remote_PeerDef;
+	lstP.len = sizeof(cm_remote_PeerReg);
 
-	lstC.val = new uint8_t[lstC.len];														// create and allign the value arrays
-	lstP.val = new uint8_t[lstP.len];
+	static uint8_t lstCval[sizeof(cm_remote_ChnlReg)];
+	lstC.val = lstCval;
+	//lstC.val = new uint8_t[lstC.len];														// create and allign the value arrays
+	static uint8_t lstPval[sizeof(cm_remote_PeerReg)];
+	lstP.val = lstPval;
+	//lstP.val = new uint8_t[lstP.len];
 
 	l1 = (s_l1*)lstC.val;																	// set list structures to something useful
 	l4 = (s_l4*)lstP.val;
 }
 
-void cmRemote::cm_init() {
+void CM_REMOTE::cm_init() {
 	if (key_pin) {
 		register_PCINT(key_pin);
 		button_ref.status = check_PCINT(key_pin, 0);										// get the latest information
@@ -83,7 +91,7 @@ void cmRemote::cm_init() {
 *- user defined functions -
 * ------------------------------------------------------------------------------------------------------------------------- */
 
-void cmRemote::cm_poll(void) {
+void CM_REMOTE::cm_poll(void) {
 	#define repeatedLong 250
 	process_peer_message();																	// if we want to send a peer message we have to poll the peer send processing
 
@@ -93,7 +101,7 @@ void cmRemote::cm_poll(void) {
 	/* button was just pressed, start for every option */
 	if (button_ref.status == 2) {
 		timer.set(byteTimeCvt(l1->LONG_PRESS_TIME));										// set timer to detect a long
-		pom.stayAwake(byteTimeCvt(l1->LONG_PRESS_TIME) + 500);								// stay awake to check button status
+		pom->stayAwake(byteTimeCvt(l1->LONG_PRESS_TIME) + 500);								// stay awake to check button status
 		button_check.armed = 1;																// set it armed
 	}
 	if (!button_check.armed) return;
@@ -101,7 +109,7 @@ void cmRemote::cm_poll(void) {
 	/* button was just released, keyShortSingle, keyShortDouble, keyLongRelease */
 	if (button_ref.status == 3) {
 		timer.set(byteTimeCvt(l1->DBL_PRESS_TIME));											// set timer to clear the repeated flags
-		pom.stayAwake(byteTimeCvt(l1->DBL_PRESS_TIME) + 500);								// stay awake to check button status
+		pom->stayAwake(byteTimeCvt(l1->DBL_PRESS_TIME) + 500);								// stay awake to check button status
 
 		/* keyLongRelease */
 		if (button_check.last_long) { 	
@@ -125,7 +133,7 @@ void cmRemote::cm_poll(void) {
 
 	/* button is still pressed, but timed out, seems to be a keyLong */
 	if (button_ref.status == 0) {	
-		pom.stayAwake(repeatedLong + 500);													// stay awake to check button status
+		pom->stayAwake(repeatedLong + 500);													// stay awake to check button status
 		timer.set(repeatedLong);															// set timer to detect a repeated long
 		button_check.last_long = 1;															// remember that it was a long
 		button_action(3);																	// last key state was a long, now it is a repeated long
@@ -150,14 +158,14 @@ void cmRemote::cm_poll(void) {
 *                   4 - end of long key press
 *                 255 - key press, for stay awake issues
 */
-void cmRemote::button_action(uint8_t event) {
+void CM_REMOTE::button_action(uint8_t event) {
 	// at the moment this channel module will only work for channel > 0 while key for maintanance channel need
 	// some special functionality, like link to toogle and pairing
 
 	DBG(RE, F("RM:buttonAction, cnl: "), lstC.cnl, F(", evt:"), event, '\n');
 	if ((event == 1) && (l1->DBL_PRESS_TIME)) return;										// when double press is set, we do not report a key single
 
-	pom.stayAwake(1000);																	// make some time to send the message
+	pom->stayAwake(1000);																	// make some time to send the message
 	if (event == 255) return;																// was only a wake up message
 
 	if ((event == 3) || (event == 4)) button_info.longpress = 1;							// set the long key flag if requested

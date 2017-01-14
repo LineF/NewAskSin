@@ -7,8 +7,8 @@
 * - -----------------------------------------------------------------------------------------------------------------------
 */
 
-#include "00_debug-flag.h"
-#include "as_main.h"
+#include "newasksin.h"
+
 
 /**------------------------------------------------------------------------------------------------------------------------
 *- mandatory functions for every new module to communicate within HM protocol stack -
@@ -19,17 +19,18 @@
 *        Constructor of master class is processed first.
 *        Setup of class specific things is done here
 */
-#include "cmMaintenance.h"
 
 
 
-cmMaintenance::cmMaintenance(const uint8_t peer_max) : cmMaster(peer_max ) {
+CM_MAINTENANCE::CM_MAINTENANCE(const uint8_t peer_max) : CM_MASTER(peer_max ) {
+	//static uint8_t lstC_val[cm_maintenance_ChnlLen];
 
 	lstC.lst = 0;
-	lstC.reg = cmMaintenance_ChnlReg;
-	lstC.def = cmMaintenance_ChnlDef;
-	lstC.len = cmMaintenance_ChnlLen;
+	lstC.reg = cm_maintenance_ChnlReg;
+	lstC.def = cm_maintenance_ChnlDef;
+	lstC.len = cm_maintenance_ChnlLen;
 	lstC.val = new uint8_t[lstC.len];														// create and allign the value arrays
+	//lstC.val = &lstC_val;
 
 	lstP.lst = 255;																			// lstP doesn't exist...
 }
@@ -39,7 +40,7 @@ cmMaintenance::cmMaintenance(const uint8_t peer_max) : cmMaster(peer_max ) {
 * @brief Here we are informed of every change in list0 and we can get the defaults
 *        like MasterID or resend time and counter if applicable
 */
-void cmMaintenance::info_config_change(void) {
+void CM_MAINTENANCE::info_config_change(void) {
 	/* get the master id by finding the pointer in progmem cnlAddr and placing the pointer of MAID to it 
 	*  if register 0x0a didn't exist, we are getting a NULL pointer with a null value, writing into it 
 	* will reset the device, failure needs not to be solved, while a device where the pair address is not valid
@@ -62,6 +63,6 @@ void cmMaintenance::info_config_change(void) {
 
 }
 
-void cmMaintenance::cm_poll(void) {
+void CM_MAINTENANCE::cm_poll(void) {
 	process_list_message();														// check if something has to be send slice wise
 }

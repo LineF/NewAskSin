@@ -1,17 +1,13 @@
 
-#ifndef _REGISTER_h
-#define _REGISTER_h
+#ifndef _REGISTER_H
+#define _REGISTER_H
 
-#define has_AES
 
 /**
 * @brief Libraries needed to run AskSin library
 */
-#include <as_main.h> 
+#include <newasksin.h> 
 #include "hmkey.h"
-#include <cmMaintenance.h> 
-#include <cmRemote.h> 
-
 
 /**
 * @brief Stage the modules and declare external functions.
@@ -20,33 +16,34 @@
 * declaration is in the register.h but the functions needs
 * to be defined in the user sketch.
 */
-AS hm;
-AES *aes = new HAS_AES;
-COM *com = new CC1101(&pin_B4, &pin_B3, &pin_B5, &pin_B2, &pin_D2);
-CBN *cbn = new CBN(1, &pin_B0);
-LED *led = new LED(&pin_D6, &pin_D4);
-BAT *bat = new NO_BAT();
-//BAT *bat = new INT_BAT(3600000, 30);								// ~170 byte more than no_bat
-//BAT *bat = new EXT_BAT(3600000, 30, &pin_D7, &pin_C6, 10, 45);	// ~320 byte more than no_bat
+AES *aes = &HAS_AES();
+COM *com = &CC1101(&pin_B4, &pin_B3, &pin_B5, &pin_B2, &pin_D2);
+CBN *cbn = &CBN(1, &pin_B0);
+LED *led = &LED(&pin_D6, &pin_D4);
+BAT *bat = &NO_BAT();
+//BAT *bat = &INT_BAT(3600000, 30);								// ~170 byte more than no_bat
+//BAT *bat = &EXT_BAT(3600000, 30, &pin_D7, &pin_C6, 10, 45);	// ~320 byte more than no_bat
+POM *pom = &POM(POWER_MODE_NO_SLEEP);
+
 
 /*
 * cmSwitch requires this functions in the user sketch:
 * void cmSwitch::initSwitch(uint8_t channel);
 * void cmSwitch::switchSwitch(uint8_t channel, uint8_t status);
 */
-const uint8_t cmMaintenance_ChnlReg[] PROGMEM = { 0x02,0x08,0x0a,0x0b,0x0c,0x12, };
-const uint8_t cmMaintenance_ChnlDef[] PROGMEM = { 0x80,0x01,0x00,0x00,0x00,0x69, };
-const uint8_t cmMaintenance_ChnlLen = 6;
+const uint8_t cm_maintenance_ChnlReg[] PROGMEM = { 0x02,0x08,0x0a,0x0b,0x0c,0x12, };
+const uint8_t cm_maintenance_ChnlDef[] PROGMEM = { 0x80,0x01,0x00,0x00,0x00,0x69, };
+const uint8_t cm_maintenance_ChnlLen = 6;
 
 
-cmMaster *ptr_CM[7] = {
-	new cmMaintenance(0),
-	new cmRemote(11, &pin_C0),
-	new cmRemote(10, &pin_C1),
-	new cmRemote(10, &pin_C2),
-	new cmRemote(10, &pin_C3),
-	new cmRemote(10, &pin_C4),
-	new cmRemote(10, &pin_C5),
+CM_MASTER *cmm[7] = {
+	&CM_MAINTENANCE(0),
+	&CM_REMOTE(11, &pin_C0),
+	&CM_REMOTE(10, &pin_C1),
+	&CM_REMOTE(10, &pin_C2),
+	&CM_REMOTE(10, &pin_C3),
+	&CM_REMOTE(10, &pin_C4),
+	&CM_REMOTE(10, &pin_C5),
 };
 
 
@@ -91,9 +88,6 @@ const uint8_t dev_static[] PROGMEM = {             // testID
 void everyTimeStart(void) {
 	DBG(SER, F("HMID: "), _HEX(dev_ident.HMID, 3), F(", MAID: "), _HEX(dev_operate.MAID, 3), F(", CNL: "), cnl_max, F("\n\n"));	// some debug
 
-	// channel 0 section 
-	pom.setMode(POWER_MODE_NO_SLEEP);
-	//bat.set(30, 3600000);
 }
 
 /**
@@ -112,24 +106,24 @@ void firstTimeStart(void) {
 	*  set_peer needs two parameters, the index which reflects the slot where the peer is written to and second the peer 
 	*  address as array. please note: no defaults a written into the respective peer list, this has to be done manually */
 	uint8_t temp[] = { 0x01,0x02,0x01,0x01, };												// declare and fill array
-	ptr_CM[1]->peerDB.set_peer(0, temp);													// write it to index 0
+	cmm[1]->peerDB.set_peer(0, temp);														// write it to index 0
 	temp[2] = 0x02;																			// adjust array content
-	//ptr_CM[1]->peerDB.set_peer(1, temp);													// write to index 1
+	//cmm[1]->peerDB.set_peer(1, temp);														// write to index 1
 	//temp[2] = 0x03;
-	//ptr_CM[1]->peerDB.set_peer(2, temp);
+	//cmm[1]->peerDB.set_peer(2, temp);
 	//temp[2] = 0x04;
-	//ptr_CM[1]->peerDB.set_peer(3, temp);
+	//cmm[1]->peerDB.set_peer(3, temp);
 
 	/* this example shows how peer lists (list3/4) could be set manually. in the first example we set default values
 	*  to channel 1 list 4 for the first peer. in the second example we write a custom information to channel 1 list 4
 	*  peer 2,3 and 4. default values are stored in the respective channel module */
-	//ptr_CM[1]->lstP.load_default();															// load the defaults into the list 4
-	//ptr_CM[1]->lstP.save_list(0);															// write it to index 0
+	//cmm[1]->lstP.load_default();															// load the defaults into the list 4
+	//cmm[1]->lstP.save_list(0);															// write it to index 0
 
-	//temp[0] = 0x01; temp[1] = 0x01;															// adjust array content
-	//ptr_CM[1]->lstP.write_array(temp, 2, 1);												// write 2 bytes into index 1
-	//ptr_CM[1]->lstP.write_array(temp, 2, 2);
-	//ptr_CM[1]->lstP.write_array(temp, 2, 3);
+	//temp[0] = 0x01; temp[1] = 0x01;														// adjust array content
+	//cmm[1]->lstP.write_array(temp, 2, 1);													// write 2 bytes into index 1
+	//cmm[1]->lstP.write_array(temp, 2, 2);
+	//cmm[1]->lstP.write_array(temp, 2, 3);
 }
 
 
