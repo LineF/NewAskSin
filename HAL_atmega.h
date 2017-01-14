@@ -18,9 +18,11 @@
 #include <avr/eeprom.h>
 #include <avr/wdt.h>
 #include <avr/interrupt.h>
+#include <avr/boot.h>
 #include <util/atomic.h>
 #include <util/delay.h>
 #include <stdint.h>
+#include "hardware.h"
 
 
 /*-- struct for pin definition in HAL_<cpu>.h template 
@@ -126,8 +128,8 @@ void add_millis(uint32_t ms);																// add some time to the counter, ma
 * otherwise the battery gets drained via the resistor network...
 * http://provideyourown.com/2012/secret-arduino-voltmeter-measure-battery-voltage/
 */
-uint8_t get_internal_voltage(void);															// internal measurement
-uint8_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2); // external measurement
+uint16_t get_internal_voltage(void);															// internal measurement
+uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2); // external measurement
 inline uint16_t get_adc_value(uint8_t reg_admux);
 //- -----------------------------------------------------------------------------------------------------------------------
 
@@ -139,15 +141,20 @@ inline uint16_t get_adc_value(uint8_t reg_admux);
 * http://www.mikrocontroller.net/articles/Sleep_Mode#Idle_Mode
 */
 static uint16_t wdtSleep_TIME;																// variable to store the current mode, amount will be added after wakeup to the millis timer
-void startWDG32ms(void);																	// set watchdog to 32 ms
-void startWDG64ms(void);																	// 64 ms
-void startWDG250ms(void);																	// 256 ms
-void startWDG8000ms(void);																	// 8192 ms
+void startTimer1ms(void);																	// set timer to 1 ms
+void startTimer32ms(void);																	// 32 ms
+void startTimer64ms(void);																	// 64 ms
+void startTimer250ms(void);																	// 256 ms
+void startTimer8000ms(void);																// 8192 ms
 void setSleep(void);																		// set the cpu in sleep mode
 
 void startWDG();																			// start watchdog timer
 void stopWDG();																				// stop the watchdog timer
 void setSleepMode();																		// set the sleep mode, documentation to follow
+//- -----------------------------------------------------------------------------------------------------------------------
+
+//- system functions -------------------------------------------------------------------------------------------------
+uint8_t getDefaultOSCCAL(void);
 //- -----------------------------------------------------------------------------------------------------------------------
 
 

@@ -349,7 +349,7 @@ void AS::process_message(void) {
 	} else if (*rcv_by03 == BY03(MSG_TYPE::HAVE_DATA)) {
 		snd_msg.mBody.FLAG.WKMEUP= 0;
 		send_ACK();
-		pom.stayAwake(500);
+		pom->stayAwake(500);
 
 
 	} else if (*rcv_by03 == BY03(MSG_TYPE::SWITCH)) {
@@ -693,5 +693,5 @@ uint8_t  isEmpty(void *ptr, uint8_t len) {
 // callback function from pin change interrupt - called when config key is pressed
 void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag)
 {
-	pom.stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
+	pom->stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
 }

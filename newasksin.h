@@ -27,6 +27,7 @@
 #include "cm_remote.h"
 #include "cm_switch.h"
 #include "cm_dimmer.h"
+#include "cm_thsensor.h"
 
 #include "version.h"
 #include "waittimer.h"

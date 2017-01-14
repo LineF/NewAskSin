@@ -15,8 +15,8 @@
 
 class BAT {
 protected:  //-------------------------------------------------------------------------------------------------------------
-	uint8_t   default_value;												// value to compare the measured value against
-	uint8_t   measure_value;												// measured tenth volt battery value
+	uint16_t  default_value;												// value to compare the measured value against
+	uint16_t  measure_value;												// measured hundreth volt battery value
 	uint32_t  interval;														// duration of the regular check
 	waitTimer timer;														// battery timer for duration check
 
@@ -24,9 +24,10 @@ protected:  //------------------------------------------------------------------
 	virtual void do_measure(void) {}
 
 public:  //----------------------------------------------------------------------------------------------------------------
-	void    set(uint32_t check_interval, uint8_t tenth_volt);
-	void    poll(void);
-	uint8_t get_status(void);
+	void     set(uint32_t check_interval, uint16_t centi_volt);
+	void     poll(void);
+	uint8_t  get_status(void);
+	uint16_t get_volts() { return measure_value; };
 
 };
 
@@ -40,7 +41,7 @@ public:  //---------------------------------------------------------------------
 
 class INT_BAT : public BAT {
 public:  //----------------------------------------------------------------------------------------------------------------
-	INT_BAT(uint32_t check_interval, uint8_t tenth_volt);
+	INT_BAT(uint32_t check_interval, uint16_t centi_volt);
 
 protected:  //-------------------------------------------------------------------------------------------------------------
 	void do_measure(void);
@@ -49,7 +50,7 @@ protected:  //------------------------------------------------------------------
 
 class EXT_BAT : public BAT {
 public:  //----------------------------------------------------------------------------------------------------------------
-	EXT_BAT(uint32_t check_interval, uint8_t tenth_volt, const s_pin_def *ptr_pin_enable, const s_pin_def *ptr_pin_measure, uint8_t z1, uint8_t z2);
+	EXT_BAT(uint32_t check_interval, uint16_t centi_volt, const s_pin_def *ptr_pin_enable, const s_pin_def *ptr_pin_measure, uint8_t z1, uint8_t z2);
 
 protected:  //-------------------------------------------------------------------------------------------------------------
 	const s_pin_def *ptr_enable;

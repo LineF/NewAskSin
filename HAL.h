@@ -96,9 +96,9 @@ extern void clear_eeprom(uint16_t addr, uint16_t len);
 * in the hardware specific HAL file. for ATMEL it is defined in HAL_atmega.h.
 * you can also use the arduino standard timer for a specific hardware by interlinking the function call to getmillis()
 */
-extern void init_millis_timer0(int16_t correct_ms = 0);
-extern void init_millis_timer1(int16_t correct_ms = 0);
-extern void init_millis_timer2(int16_t correct_ms = 0);
+extern void init_millis_timer0(int16_t correct_ms);
+extern void init_millis_timer1(int16_t correct_ms);
+extern void init_millis_timer2(int16_t correct_ms);
 extern uint32_t get_millis(void);
 extern void add_millis(uint32_t ms);
 //- -----------------------------------------------------------------------------------------------------------------------
@@ -109,9 +109,9 @@ extern void add_millis(uint32_t ms);
 * divider with one pin to enable and another to measure the adc value. both is hardware and vendor related, you will find the
 * code definition in HAL_<vendor>.h
 */
-extern uint8_t get_internal_voltage(void);
+extern uint16_t get_internal_voltage(void);
 extern void init_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure);
-extern uint8_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2);
+extern uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2);
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -203,6 +203,7 @@ void get_random(uint8_t *buf);
 
 	//- timer functions -------------------------------------------------------------------------------------------------------
 	// https://github.com/zkemble/millis/blob/master/millis/
+/*
 	#ifdef TIMER2_LOW_FREQ_OSC
 		#define REG_TCCRA		TCCR2A
 		#define REG_TCCRB		TCCR2B
@@ -227,10 +228,10 @@ void get_random(uint8_t *buf);
 		#define PRESCALER       64
 		#define ISR_VECT		TIMER0_COMPA_vect
 	#endif
+*/
 
 
-
-static uint16_t wdtSleep_TIME;
+//static uint16_t wdtSleep_TIME;
 
 
 

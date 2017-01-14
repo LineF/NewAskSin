@@ -12,9 +12,9 @@
 
 
 //public:  //--------------------------------------------------------------------------------------------------------------
-void BAT::set(uint32_t check_interval, uint8_t tenth_volt) {
+void BAT::set(uint32_t check_interval, uint16_t centi_volt) {
 	interval = check_interval;
-	default_value = tenth_volt;
+	default_value = centi_volt;
 }
 
 void BAT::poll(void) {
@@ -39,9 +39,9 @@ NO_BAT::NO_BAT() {
 
 
 //public:  //--------------------------------------------------------------------------------------------------------------
-INT_BAT::INT_BAT(uint32_t check_interval, uint8_t tenth_volt) {
+INT_BAT::INT_BAT(uint32_t check_interval, uint16_t centi_volt) {
 	interval = check_interval;
-	default_value = tenth_volt;
+	default_value = centi_volt;
 }
 
 //protected:  //-----------------------------------------------------------------------------------------------------------
@@ -51,9 +51,9 @@ INT_BAT::INT_BAT(uint32_t check_interval, uint8_t tenth_volt) {
 
 
 //public:  //--------------------------------------------------------------------------------------------------------------
-EXT_BAT::EXT_BAT(uint32_t check_interval, uint8_t tenth_volt, const s_pin_def *ptr_pin_enable, const s_pin_def *ptr_pin_measure, uint8_t z1, uint8_t z2) {
+EXT_BAT::EXT_BAT(uint32_t check_interval, uint16_t centi_volt, const s_pin_def *ptr_pin_enable, const s_pin_def *ptr_pin_measure, uint8_t z1, uint8_t z2) {
 	interval = check_interval;
-	default_value = tenth_volt;
+	default_value = centi_volt;
 
 	ptr_enable = ptr_pin_enable;
 	ptr_measure = ptr_pin_measure;

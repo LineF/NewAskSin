@@ -145,6 +145,11 @@ void clear_eeprom(uint16_t addr, uint16_t len) {
 //-- timer functions ------------------------------------------------------------------------------------------------------
 static volatile uint32_t milliseconds;
 static volatile uint8_t timer = 255;
+#ifdef TIMER2_LOW_FREQ_OSC
+static volatile uint32_t freq_corr;
+uint32_t ocrCorrCnt;
+uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not needed
+#endif
 
 void init_millis_timer0(int16_t correct_ms) {
 	timer = 0;
@@ -153,7 +158,7 @@ void init_millis_timer0(int16_t correct_ms) {
 	TCCR0A = _BV(WGM01);
 	TCCR0B = (_BV(CS01) | _BV(CS00));
 	TIMSK0 = _BV(OCIE0A);
-	OCR0A = ((F_CPU / 64) / 1000) + correct_ms;
+	OCR0A = ((F_CPU / 64) / 1000) - 1 + correct_ms;
 }
 
 void init_millis_timer1(int16_t correct_ms) {
@@ -163,17 +168,27 @@ void init_millis_timer1(int16_t correct_ms) {
 	TCCR1A = 0;
 	TCCR1B = (_BV(WGM12) | _BV(CS10) | _BV(CS11));
 	TIMSK1 = _BV(OCIE1A);
-	OCR1A = ((F_CPU / 64) / 1000) + correct_ms;
+	OCR1A = ((F_CPU / 64) / 1000) - 1 + correct_ms;
 }
 
 void init_millis_timer2(int16_t correct_ms) {
 	timer = 2;
 	power_timer2_enable();
+	#ifdef TIMER2_LOW_FREQ_OSC
+		ASSR |= (1<<AS2);																	// enable async Timer/Counter 2
+		_delay_ms(1000);																	// wait for clean osc startup
+	#endif
 
 	TCCR2A = _BV(WGM21);
 	TCCR2B = (_BV(CS21) | _BV(CS20));
 	TIMSK2 = _BV(OCIE2A);
-	OCR2A = ((F_CPU / 32) / 1000) + correct_ms;
+	#ifdef TIMER2_LOW_FREQ_OSC
+		startTimer1ms();
+		while (ASSR & _BV(TCR2AUB))
+			;
+	#else
+		OCR2A = ((F_CPU / 32) / 1000) - 1 + correct_ms;
+	#endif
 }
 
 uint32_t get_millis(void) {
@@ -197,19 +212,28 @@ ISR(TIMER1_COMPA_vect) {
 	if (timer == 1) ++milliseconds;
 }
 ISR(TIMER2_COMPA_vect) {
-	if (timer == 2) ++milliseconds;
+	#ifdef TIMER2_LOW_FREQ_OSC
+		freq_corr += ocrCorrCnt;
+		if (freq_corr >= FREQ_MAX_CORR)
+			freq_corr -= FREQ_MAX_CORR;
+		else
+			milliseconds += ocrSleep_TIME;
+	#else
+		if (timer == 2) ++milliseconds;
+		//setPinCng(LED_RED_PORT, LED_RED_PIN);													// for generating a 1 KHz signal on LED pin to calibrate CPU
+	#endif
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
 //-- battery measurement functions ----------------------------------------------------------------------------------------
-uint8_t get_internal_voltage(void) {
+uint16_t get_internal_voltage(void) {
 	uint16_t result = get_adc_value(admux_internal);										// get the adc value on base of the predefined adc register setup
 	result = 11253L / result;																// calculate Vcc (in mV); 11253 = 1.1*1023*10 (*10 while we want to get 10mv)
 	return (uint8_t)result;																	// Vcc in millivolts
 }
 
-uint8_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2) {
+uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2) {
 	/* set the pins to enable measurement */
 	set_pin_output(ptr_enable);																// set the enable pin as output
 	set_pin_low(ptr_enable);																// and to gnd, while measurement goes from VCC over the resistor network to GND
@@ -219,7 +243,7 @@ uint8_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_m
 	/* call the adc get function to get the adc value, do some mathematics on the result */
 	uint16_t result = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
 	result = ((result * ref_v_external) / 103) / z1;										// calculate vcc between gnd and measurement pin 
-	result = result * (z1 + z2) / 100;														// interpolate result to vcc 
+	result = result * (z1 + z2) / 10;														// interpolate result to vcc 
 
 	/* finally, we set both pins as input again to waste no energy over the resistor network to VCC */
 	set_pin_input(ptr_enable);	
@@ -258,26 +282,114 @@ uint16_t get_adc_value(uint8_t reg_admux) {
 //-- power management functions --------------------------------------------------------------------------------------------
 // http://donalmorrissey.blogspot.de/2010/04/sleeping-arduino-part-5-wake-up-via.html
 // http://www.mikrocontroller.net/articles/Sleep_Mode#Idle_Mode
-void startWDG32ms(void) {
+#ifdef TIMER2_LOW_FREQ_OSC
+#define PRESC_32		(_BV(CS21)|_BV(CS20))
+#define PRESC_1024		(_BV(CS22)|_BV(CS21)|_BV(CS20))
+
+void writeOCR2A(uint8_t val) {
+	OCR2A = val;
+	while (ASSR & _BV(OCR2AUB))
+		;
+}
+void writePRESC(uint8_t val) {
+	TCCR2B = TCCR2B & ~(_BV(CS22)|_BV(CS21)|_BV(CS20)) | val;
+	while (ASSR & _BV(TCR2BUB))
+		;
+}
+void startTimer1ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(0);
+	ocrSleep_TIME = 1;
+	ocrCorrCnt = FREQ_CORR_FACT;
+}
+void startTimer32ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(31);
+	ocrSleep_TIME = 32;
+	ocrCorrCnt = 32 * FREQ_CORR_FACT;
+}
+void startTimer64ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(63);
+	ocrSleep_TIME = 64;
+	ocrCorrCnt = 64 * FREQ_CORR_FACT;
+}
+void startTimer250ms(void) {
+	writePRESC(PRESC_32);
+	writeOCR2A(255);
+	ocrSleep_TIME = 250;
+	ocrCorrCnt = 0;
+}
+void startTimer8000ms(void) {
+	writePRESC(PRESC_1024);
+	writeOCR2A(255);
+	ocrSleep_TIME = 8000;
+	ocrCorrCnt = 0;
+}
+void setSleepMode() {
+	set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+}
+
+#else
+
+static volatile uint8_t wdt_int;
+uint16_t wdt_cal_ms;															// uint16 is enough - 32 bit here not needed
+
+void startTimer32ms(void) {
 	WDTCSR |= (1 << WDCE) | (1 << WDE);
 	WDTCSR = (1 << WDIE) | (1 << WDP0);
-	wdtSleep_TIME = 32;
+	wdtSleep_TIME = wdt_cal_ms / 8;
 }
-void startWDG64ms(void) {
+void startTimer64ms(void) {
 	WDTCSR |= (1 << WDCE) | (1 << WDE);
 	WDTCSR = (1 << WDIE) | (1 << WDP1);
-	wdtSleep_TIME = 64;
+	wdtSleep_TIME = wdt_cal_ms / 4;
 }
-void startWDG250ms(void) {
+void startTimer250ms(void) {
 	WDTCSR |= (1 << WDCE) | (1 << WDE);
 	WDTCSR = (1 << WDIE) | (1 << WDP2);
-	wdtSleep_TIME = 256;
+	wdtSleep_TIME = wdt_cal_ms;
 }
-void startWDG8000ms(void) {
+void startTimer8000ms(void) {
 	WDTCSR |= (1 << WDCE) | (1 << WDE);
 	WDTCSR = (1 << WDIE) | (1 << WDP3) | (1 << WDP0);
-	wdtSleep_TIME = 8192;
+	wdtSleep_TIME = wdt_cal_ms * 32;
 }
+
+void calibrateWatchdog() {														// initMillis() must have been called yet
+	uint8_t sreg = SREG;														// remember interrupt state (sei / cli)
+	wdt_cal_ms = 0;
+	startTimer250ms();
+
+	uint16_t startMillis = get_millis();
+	wdt_int = 0;
+	wdt_reset();
+	sei();
+	
+	while(!wdt_int)																// wait for watchdog interrupt
+		;
+	SREG = sreg;																// restore previous interrupt state
+	wdt_cal_ms = get_millis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
+	stopWDG();
+	//DBG_SER(F("wdt_cal: "), wdt_cal_ms, F("\n"));
+}
+
+void    startWDG() {
+	WDTCSR = (1 << WDIE);
+}
+void    stopWDG() {
+	WDTCSR &= ~(1 << WDIE);
+}
+void    setSleepMode() {
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+}
+
+ISR(WDT_vect) {
+	add_millis(wdtSleep_TIME);																// nothing to do, only for waking up
+	wdt_int = 1;
+}
+#endif
+
 
 void setSleep(void) {
 	// some power savings by switching off some CPU functionality
@@ -296,17 +408,16 @@ void setSleep(void) {
 	//dbg << '.';																			// some debug
 }
 
-void    startWDG() {
-	WDTCSR = (1 << WDIE);
-}
-void    stopWDG() {
-	WDTCSR &= ~(1 << WDIE);
-}
-void    setSleepMode() {
-	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+//- -----------------------------------------------------------------------------------------------------------------------
+
+// read factory defined OSCCAL value from signature row (address 0x0001)
+uint8_t getDefaultOSCCAL(void)
+{
+	uint8_t oscCal;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		oscCal = boot_signature_byte_get(0x0001);
+	}
+	return oscCal;
 }
 
-ISR(WDT_vect) {
-	add_millis(wdtSleep_TIME);																// nothing to do, only for waking up
-}
 //- -----------------------------------------------------------------------------------------------------------------------

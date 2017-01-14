@@ -8,6 +8,9 @@
 #define UCSR                    UCSR0B
 #define RXEN                    RXEN0
 
+#define FREQ_CORR_FACT	234375L
+#define FREQ_MAX_CORR	10000000L
+
 
 //- power management definitions --------------------------------------------------------------------------------------------
 #define backupPwrRegs()         uint8_t xPrr = PRR; PRR = 0xFF;

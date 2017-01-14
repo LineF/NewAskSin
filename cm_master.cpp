@@ -416,7 +416,7 @@ DBG(CM, F("CM: delay.done: "), cm->delay.done(), F(", f.DELAY: "), cm->f.DELAY, 
 uint16_t cm_prep_default(uint16_t ee_start_addr) {
 
 	for (uint8_t i = 0; i < cnl_max; i++) {												// step through all channels
-		DBG(CM, F("CM: cnlidx: "), i, F(", lstC.val: "), _HEX((uint8_t*)&pCM->lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&pCM->lstP.val, 2), '\n');
+		//DBG(CM, F("CM: cnlidx: "), i, F(", lstC.val: "), _HEX((uint8_t*)&pCM->lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&pCM->lstP.val, 2), '\n');
 		
 		cmm[i]->list[cmm[i]->lstC.lst] = &cmm[i]->lstC;									// allign lstC to the list array
 		if (cmm[i]->lstP.lst < 5) cmm[i]->list[cmm[i]->lstP.lst] = &cmm[i]->lstP;		// because of the absence of lstP in channel0
@@ -427,7 +427,7 @@ uint16_t cm_prep_default(uint16_t ee_start_addr) {
 		ee_start_addr += (cmm[i]->lstP.len * cmm[i]->peerDB.max);						// create new address by adding the length of the list before but while peer list, multiplied by the amount of possible peers
 
 		// defaults loaded in the AS module init, on every time start
-		DBG(CM, F("CM:prep_defaults, cnl:"), pCM->lstC.cnl, F(", lst:"), pCM->lstC.lst, F(", len:"), pCM->lstC.len, F(", data:"), _HEX(pCM->lstC.val, pCM->lstC.len), '\n');
+		//DBG(CM, F("CM:prep_defaults, cnl:"), pCM->lstC.cnl, F(", lst:"), pCM->lstC.lst, F(", len:"), pCM->lstC.len, F(", data:"), _HEX(pCM->lstC.val, pCM->lstC.len), '\n');
 	}
 
 	for (uint8_t i = 0; i < cnl_max; i++) {												// step through all channels
@@ -779,7 +779,7 @@ void send_POWER_EVENT_CYCLE(uint8_t bidi, CM_MASTER *channel_module, uint8_t *pt
 }
 void send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
 }
-void send_WEATHER_EVENT(cmMaster *channel_module, uint8_t *ptr_payload, uint8_t payload_len) {
+void send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uint8_t payload_len) {
 	if (peer_msg.active) return;
 	peer_msg.type = MSG_TYPE::WEATHER_EVENT;
 	peer_msg.peerDB = &channel_module->peerDB;

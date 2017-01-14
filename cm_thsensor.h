@@ -7,23 +7,23 @@
 * - -----------------------------------------------------------------------------------------------------------------------
 */
 
-#ifndef _cmTHSensWeather_H
-#define _cmTHSensWeather_H
+#ifndef _cm_thsensor_H
+#define _cm_thsensor_H
 
-#include "cmMaster.h"
+#include "cm_master.h"
 
-// default settings are defined in cmTHSensWeather.cpp - updatePeerDefaults
+// default settings are defined in cm_thsensor.cpp - updatePeerDefaults
 
 // List 1
-const uint8_t cmTHSensWeather_ChnlReg[] PROGMEM = { 0x08, };
-const uint8_t cmTHSensWeather_ChnlDef[] PROGMEM = { 0x00, };
+const uint8_t cm_thsensor_ChnlReg[] PROGMEM = { 0x08, };
+const uint8_t cm_thsensor_ChnlDef[] PROGMEM = { 0x00, };
 
 // List 4
-const uint8_t cmTHSensWeather_PeerReg[] PROGMEM = { 0x01,0x02, };
-const uint8_t cmTHSensWeather_PeerDef[] PROGMEM = { 0x00,0x00, };
+const uint8_t cm_thsensor_PeerReg[] PROGMEM = { 0x01,0x02, };
+const uint8_t cm_thsensor_PeerDef[] PROGMEM = { 0x00,0x00, };
 
 
-class cmTHSensWeather : public cmMaster {
+class cm_thsensor : public CM_MASTER {
 private:  //---------------------------------------------------------------------------------------------------------------
 
 	struct s_l1 {
@@ -43,7 +43,7 @@ private:  //--------------------------------------------------------------------
 
 public:  //----------------------------------------------------------------------------------------------------------------
 
-	cmTHSensWeather(const uint8_t peer_max);												// constructor
+	cm_thsensor(const uint8_t peer_max);												// constructor
 
 	struct s_sensVal
 	{
@@ -75,6 +75,6 @@ public:  //---------------------------------------------------------------------
 };
 
 extern void initTH(uint8_t channel);														// functions in user sketch needed
-extern void measureTH(uint8_t channel, cmTHSensWeather::s_sensVal *sensVal);
+extern void measureTH(uint8_t channel, cm_thsensor::s_sensVal *sensVal);
 
 #endif

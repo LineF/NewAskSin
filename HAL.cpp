@@ -7,9 +7,10 @@
 */
 
 
-#include <avr/boot.h>
+//#include <avr/boot.h>
 #include "00_debug-flag.h"
 #include "HAL.h"
+//#include "HAL_atmega.h"
 
 
 
@@ -43,7 +44,7 @@ void get_random(uint8_t *buf) {
 //- power management functions --------------------------------------------------------------------------------------------
 // http://donalmorrissey.blogspot.de/2010/04/sleeping-arduino-part-5-wake-up-via.html
 // http://www.mikrocontroller.net/articles/Sleep_Mode#Idle_Mode
-
+/*
 #ifdef TIMER2_LOW_FREQ_OSC
 //static volatile uint8_t wdt_int;
 uint32_t ocrCorrCnt;
@@ -95,7 +96,6 @@ void setSleepMode() {
 
 #else
 
-static uint16_t wdtSleep_TIME;
 static volatile uint8_t wdt_int;
 uint16_t wdt_cal_ms;															// uint16 is enough - 32 bit here not needed
 
@@ -125,7 +125,7 @@ void	calibrateWatchdog() {													// initMillis() must have been called yet
 	wdt_cal_ms = 0;
 	startTimer250ms();
 
-	uint16_t startMillis = getMillis();
+	uint16_t startMillis = get_millis();
 	wdt_int = 0;
 	wdt_reset();
 	sei();
@@ -133,7 +133,7 @@ void	calibrateWatchdog() {													// initMillis() must have been called yet
 	while(!wdt_int)																// wait for watchdog interrupt
 		;
 	SREG = sreg;																// restore previous interrupt state
-	wdt_cal_ms = getMillis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
+	wdt_cal_ms = get_millis() - startMillis;										// wdt_cal_ms now has "real" length of 250ms wdt_interrupt
 	stopWDG();
 	DBG(SER, F("wdt_cal: "), wdt_cal_ms, F("\n"));
 }
@@ -170,7 +170,7 @@ void    setSleep(void) {
 	// wakeup will be here
 	sleep_disable();															// first thing after waking from sleep, disable sleep...
 	recoverPwrRegs();															// recover the power reduction register settings
-}
+}*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -265,14 +265,14 @@ void    setSleep(void) {
 
 
 // read factory defined OSCCAL value from signature row (address 0x0001)
-uint8_t getDefaultOSCCAL(void)
+/*uint8_t getDefaultOSCCAL(void)
 {
 	uint8_t oscCal;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		oscCal = boot_signature_byte_get(0x0001);
 	}
 	return oscCal;
-}
+}*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 

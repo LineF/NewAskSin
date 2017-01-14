@@ -19,22 +19,23 @@
 *        Constructor of master class is processed first.
 *        Setup of class specific things is done here
 */
-#include "cmTHSensWeather.h"
+#include "newasksin.h"
+#include "cm_thsensor.h"
 #include <as_main.h>
 
-cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
+cm_thsensor::cm_thsensor(const uint8_t peer_max) : CM_MASTER(peer_max) {
 	DBG(TH, F("TH.\n"));
 
 	lstC.lst = 1;																			// setup the channel list with all dependencies
-	lstC.reg = (uint8_t*)cmTHSensWeather_ChnlReg;
-	lstC.def = (uint8_t*)cmTHSensWeather_ChnlDef;
-	lstC.len = sizeof(cmTHSensWeather_ChnlReg);
+	lstC.reg = (uint8_t*)cm_thsensor_ChnlReg;
+	lstC.def = (uint8_t*)cm_thsensor_ChnlDef;
+	lstC.len = sizeof(cm_thsensor_ChnlReg);
 	lstC.val = new uint8_t[lstC.len];
 
 	lstP.lst = 4;																			// setup the peer list with all dependencies
-	lstP.reg = (uint8_t*)cmTHSensWeather_PeerReg;
-	lstP.def = (uint8_t*)cmTHSensWeather_PeerDef;
-	lstP.len = sizeof(cmTHSensWeather_PeerReg);
+	lstP.reg = (uint8_t*)cm_thsensor_PeerReg;
+	lstP.def = (uint8_t*)cm_thsensor_PeerDef;
+	lstP.len = sizeof(cm_thsensor_PeerReg);
 	lstP.val = new uint8_t[lstP.len];
 
 	l1 = (s_l1*)lstC.val;																	// set list structures to something useful
@@ -46,12 +47,12 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 	//uint16_t msgDelay = (rand() % 2000) + 1000;											// set message delay
 	//msgTmr.set(msgDelay);																	// wait some time to settle the device
 	//cm_status.message_type = INFO::SND_ACTUATOR_STATUS;									// send the initial status info
-	cm_status.message_type = INFO::NOTHING;													// send the initial status info
+	cm_status.message_type = STA_INFO::NOTHING;													// send the initial status info
 	cm_status.message_delay.set(0);
 
 	sensTmr.set(3000);																		// wait for first measurement being completed
 
-	DBG(TH, F("cmTHSensWeather, cnl: "), lstC.cnl, '\n');
+	DBG(TH, F("cm_thsensor, cnl: "), lstC.cnl, '\n');
 }
 
 
@@ -66,7 +67,7 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 * @param duraTime Pointer to 2 byte array containing the encoded durationtime value
 *
 */
-/*void cmTHSensWeather::message_trigger11(uint8_t setValue, uint8_t *rampTime, uint8_t *duraTime) {
+/*void cm_thsensor::message_trigger11(uint8_t setValue, uint8_t *rampTime, uint8_t *duraTime) {
 	DBG(TH, F("trigger11, setValue:"), setValue, F(", rampTime:"), intTimeCvt((uint16_t) rampTime), F(", duraTime:"), intTimeCvt((uint16_t) duraTime), '\n' );
 }*/
 
@@ -77,7 +78,7 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 * @param msgCnt 1 byte containing the message counter of the sender
 *
 */
-/*void cmTHSensWeather::message_trigger3E(uint8_t msgLng, uint8_t msgCnt) {
+/*void cm_thsensor::message_trigger3E(uint8_t msgLng, uint8_t msgCnt) {
 	message_trigger40(msgLng, msgCnt);
 }*/
 
@@ -88,7 +89,7 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 * @param msgCnt 1 byte containing the message counter of the sender
 *
 */
-/*void cmTHSensWeather::message_trigger40(uint8_t msgLng, uint8_t msgCnt) {
+/*void cm_thsensor::message_trigger40(uint8_t msgLng, uint8_t msgCnt) {
 	DBG(TH, F("trigger40, msgLng:"), msgLng, F(", msgCnt:"), msgCnt, '\n' );
 }*/
 
@@ -100,22 +101,22 @@ cmTHSensWeather::cmTHSensWeather(const uint8_t peer_max) : cmMaster(peer_max) {
 * @param msgVal 1 byte with the value of the sensor
 *
 */
-/*void cmTHSensWeather::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal) {
+/*void cm_thsensor::message_trigger41(uint8_t msgLng, uint8_t msgCnt, uint8_t msgVal) {
 	DBG(TH, F("trigger41, msgLng:"), msgLng, F(", msgCnt:"), msgCnt, F(", val:"), msgVal, '\n' );
 }*/
 
 /*
 * @brief Received message handling forwarded by AS::processMessage
 */
-void cmTHSensWeather::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
-	cm_status.message_type = INFO::SND_ACTUATOR_STATUS;										// send next time a info status message
+void cm_thsensor::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
+	cm_status.message_type = STA_INFO::SND_ACTUATOR_STATUS;										// send next time a info status message
 	cm_status.message_delay.set(50);														// wait a short time to set status
 
 	DBG(TH, F("TH:CONFIG_STATUS_REQUEST\n"));
 }
 
 /*
-void cmTHSensWeather::sendStatus(void) {
+void cm_thsensor::sendStatus(void) {
 
 	if (!sendStat) return;																	// nothing to do
 	if (!msgTmr.done()) return;																// not the right time
@@ -128,7 +129,7 @@ void cmTHSensWeather::sendStatus(void) {
 }
 */
 
-void cmTHSensWeather::cm_poll(void) {
+void cm_thsensor::cm_poll(void) {
 
 	send_status(&cm_status, lstC.cnl);														// check if there is some status to send, function call in cmMaster.cpp
 	//adjustStatus();																		// check if something is to be set on the Relay channel
@@ -148,14 +149,14 @@ void cmTHSensWeather::cm_poll(void) {
 }
 
 
-/*void cmTHSensWeather::set_toggle(void) {
+/*void cm_thsensor::set_toggle(void) {
 	// setToggle will be addressed by config button in mode 2 by a short key press
 	// here we can toggle the status of the actor
 	DBG(TH, F("set_toggle\n") );
 }*/
 
 
-/*void cmTHSensWeather::request_pair_status(void) {
+/*void cm_thsensor::request_pair_status(void) {
 	// we received a status request, appropriate answer is an InfoActuatorStatus message
 	DBG(TH, F("request_pair_status\n") );
 	
@@ -164,7 +165,7 @@ void cmTHSensWeather::cm_poll(void) {
 }*/
 
 
-uint32_t cmTHSensWeather::calcSendSlot(void) {
+uint32_t cm_thsensor::calcSendSlot(void) {
 	uint8_t a[4];
 	a[0] = dev_ident.HMID[2];
 	a[1] = dev_ident.HMID[1];
@@ -198,7 +199,7 @@ uint32_t cmTHSensWeather::calcSendSlot(void) {
 * automatically.
 */
 
-/*void cmTHSensWeather::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
+/*void cm_thsensor::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
 
 	// if both peer channels are given, peer channel 01 default is the off dataset, peer channel 02 default is the on dataset
 	// if only one peer channel is given, then the default dataset is toogle
@@ -217,6 +218,6 @@ uint32_t cmTHSensWeather::calcSendSlot(void) {
 		//lstP.val[10] = lstP.val[21] = 0x63;
 	//} 
 
-	DBG(TH, F("cmTHSensWeather:request_peer_defaults CNL_A:"), _HEXB(buf->PEER_CNL[0]), F(", CNL_B:"), _HEXB(buf->PEER_CNL[1]), F(", idx:"), _HEXB(idx), '\n' );
+	DBG(TH, F("cm_thsensor:request_peer_defaults CNL_A:"), _HEXB(buf->PEER_CNL[0]), F(", CNL_B:"), _HEXB(buf->PEER_CNL[1]), F(", idx:"), _HEXB(idx), '\n' );
 }*/
 
