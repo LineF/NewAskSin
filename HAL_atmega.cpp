@@ -241,9 +241,9 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 	//set_pin_high(ptr_measure);
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
-	uint16_t result = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
-	result = ((result * ref_v_external) / 103) / z1;										// calculate vcc between gnd and measurement pin 
-	result = result * (z1 + z2) / 10;														// interpolate result to vcc 
+	uint32_t result = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
+	result = ((result * ref_v_external) / 102) / z1;										// calculate vcc between gnd and measurement pin 
+	result = result * (z1 + z2) / 100;														// interpolate result to vcc
 
 	/* finally, we set both pins as input again to waste no energy over the resistor network to VCC */
 	set_pin_input(ptr_enable);	
