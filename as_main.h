@@ -57,18 +57,24 @@ public:  //---------------------------------------------------------------------
 	* is set to 1. All receive functions are handled within the AS class - some forwarded to the channel module class.
 	* The intent is to overload them there by the respective user channel module and work with the information accordingly.
 	*/
-	void rcv_poll(void);																	// poll function
-	void get_intend(void);																	// checks the received string if addresses are known
-	void process_message(void);
+	inline void rcv_poll(void);																// poll function
+	inline void get_intend(void);															// checks the received string if addresses are known
+	inline void process_message(void);
 
-	void snd_poll(void);																	// poll function, process if something is to send
+	inline void snd_poll(void);																// poll function, process if something is to send
+	inline void process_list_message_poll(void);											// to answer peer and register list messages, because they are send in several strings due to the size
+	inline void process_peer_message_poll(void);											// peer message poll function, details are in peer_msg struct
 
 
-	/* - hardware related functions without any relation to a specific channel */
-	void INSTRUCTION_RESET(s_m1104xx *buf);
-	void INSTRUCTION_ENTER_BOOTLOADER(s_m1183xx *buf);
-	void INSTRUCTION_ADAPTION_DRIVE_SET(s_m1187xx *buf);
-	void INSTRUCTION_ENTER_BOOTLOADER2(s_m11caxx *buf);
+	/* - device related functions without any relation to a specific channel */
+	inline void INSTRUCTION_RESET(s_m1104xx *buf);
+	inline void INSTRUCTION_ENTER_BOOTLOADER(s_m1183xx *buf);
+	inline void INSTRUCTION_ADAPTION_DRIVE_SET(s_m1187xx *buf);
+	inline void INSTRUCTION_ENTER_BOOTLOADER2(s_m11caxx *buf);
+
+
+	/* - asksin relevant helpers */
+	inline uint8_t is_peer_valid(uint8_t *peer);											// search through all instances and ceck if we know the peer, returns the channel
 
 };
 
@@ -94,15 +100,7 @@ extern void firstTimeStart(void);
 
 
 
-//- some helpers ----------------------------------------------------------------------------------------------------------
-uint32_t byteTimeCvt(uint8_t tTime);
-uint32_t intTimeCvt(uint16_t iTime);
 void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag);
-
-extern uint8_t  isEmpty(void *ptr, uint8_t len);										// check if a byte array is empty
-#define isEqual(p1,p2,len) memcmp(p1, p2, len)?0:1										// check if a byte array is equal
-
-//- -----------------------------------------------------------------------------------------------------------------------
 
 
 
