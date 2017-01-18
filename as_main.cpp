@@ -636,6 +636,7 @@ void AS::process_peer_message_poll(void) {
 		memcpy(sm->mBody.RCV_ID, dev_operate.MAID, 3);										// copy in the pair address
 		sm->mBody.MSG_CNT = sm->MSG_CNT;													// set the message counter
 		sm->MSG_CNT++;																		// increase the counter for next time use
+		sm->mBody.FLAG.WKMEUP = 1;
 		pm->clear();																		// nothing to do here any more, while handled as pair message
 		return;																				// and return, otherwise some infos are overwritten
 	}
@@ -816,3 +817,4 @@ uint8_t AS::is_peer_valid(uint8_t *peer) {
 void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag)
 {
 	pom->stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
+}
