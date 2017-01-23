@@ -955,6 +955,18 @@ void AS::send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_
 }
 void AS::send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
 }
+void AS::send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uint8_t payload_len) {
+	if (peer_msg.active) return;
+	peer_msg.type = MSG_TYPE::WEATHER_EVENT;
+	peer_msg.peerDB = &channel_module->peerDB;
+	peer_msg.lstP = &channel_module->lstP;
+	peer_msg.lstC = &channel_module->lstC;
+	peer_msg.payload_ptr = ptr_payload;
+	peer_msg.payload_len = payload_len;
+	peer_msg.active = MSG_ACTIVE::PEER;
+	peer_msg.max_retr = 3;
+	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, payload_len), '\n');
+}
 
 
 
@@ -1102,16 +1114,3 @@ uint8_t AS::is_peer_valid(uint8_t *peer) {
 	#endif
 }
 */
-
-	
-	
-	
-
-
-
-
-// callback function from pin change interrupt - called when config key is pressed
-void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag)
-{
-	pom->stayAwake(DEBOUNCE + 1);																// stay awake while debounce time is running
-}

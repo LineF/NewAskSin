@@ -137,6 +137,7 @@ public:  //---------------------------------------------------------------------
 	void send_POWER_EVENT_CYCLE(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
 	void send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
 	void send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
+	void send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uint8_t payload_len);
 
 
 
@@ -170,16 +171,6 @@ extern void everyTimeStart(void);
 * EE::setListArray()
 */
 extern void firstTimeStart(void);
-
-
-
-
-
-void pci_callback(uint8_t vec, uint8_t pin, uint8_t flag);
-
-
-
-
 
 #endif
 
