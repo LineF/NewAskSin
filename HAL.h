@@ -24,7 +24,7 @@
 #include <stdint.h>
 //#include <avr/common.h>
 
-#include "hardware.h"
+#include "defines.h"
 
 
 

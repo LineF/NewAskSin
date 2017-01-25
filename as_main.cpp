@@ -11,6 +11,7 @@
 
 #include "newasksin.h"
 #include "as_analyze.h"
+#include "defines.h"
 
 
 // public:		//---------------------------------------------------------------------------------------------------------
@@ -433,7 +434,7 @@ void AS::snd_poll(void) {
 	if (sm->retr_cnt == 0xff) {
 		sm->clear();																		// nothing to do any more
 		led->set(LED_STAT::GOT_ACK);														// fire the status led
-		pom->stayAwake(100);																// and stay awake for a short while
+		//pom->stayAwake(100);																// and stay awake for a short while
 		return;
 	}
 
@@ -509,8 +510,9 @@ void AS::snd_poll(void) {
 		sm->retr_cnt++;																		// remember that we had send the message
 
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
-		led->set(LED_STAT::SEND_MSG);														// fire the status led
-		pom->stayAwake(100);																// and stay awake for a short while
+		if (*cmm[0]->list[0]->ptr_to_val(REG_CHN0_LED_MODE) & 0x40)							// LED on ?
+			led->set(LED_STAT::SEND_MSG);													// fire the status led
+		//pom->stayAwake(100);																// and stay awake for a short while
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
@@ -523,7 +525,7 @@ void AS::snd_poll(void) {
 
 		sm->timeout = 1;																	// set the time out only while an ACK or answer was requested
 		led->set(LED_STAT::GOT_NACK);														// fire the status led
-		pom->stayAwake(100);																// and stay awake for a short while
+		//pom->stayAwake(100);																// and stay awake for a short while
 
 		DBG_SN(F("  timed out "), _TIME, '\n');											// some debug
 	}

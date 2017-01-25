@@ -22,7 +22,7 @@
 #include <util/atomic.h>
 #include <util/delay.h>
 #include <stdint.h>
-#include "hardware.h"
+#include "defines.h"
 
 
 /*-- struct for pin definition in HAL_<cpu>.h template 
