@@ -963,6 +963,7 @@ void AS::send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uin
 	peer_msg.peerDB = &channel_module->peerDB;
 	peer_msg.lstP = &channel_module->lstP;
 	peer_msg.lstC = &channel_module->lstC;
+	((uint8_t *)ptr_payload)[0] |= bat->get_status() ? 0x80 : 0x00;
 	peer_msg.payload_ptr = ptr_payload;
 	peer_msg.payload_len = payload_len;
 	peer_msg.active = MSG_ACTIVE::PEER;
