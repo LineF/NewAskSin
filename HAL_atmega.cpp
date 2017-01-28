@@ -158,7 +158,7 @@ uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not need
 #endif
 
 #ifdef hasTimer0
-void init_millis_timer0(int16_t correct_ms = 0) {
+void init_millis_timer0(int16_t correct_ms) {
 	timer = 0;
 	power_timer0_enable();
 
@@ -170,7 +170,7 @@ void init_millis_timer0(int16_t correct_ms = 0) {
 #endif
 
 #ifdef hasTimer1
-void init_millis_timer1(int16_t correct_ms = 0) {
+void init_millis_timer1(int16_t correct_ms) {
 	timer = 1;
 	power_timer1_enable();
 
@@ -182,7 +182,7 @@ void init_millis_timer1(int16_t correct_ms = 0) {
 #endif
 
 #ifdef hasTimer2
-void init_millis_timer2(int16_t correct_ms = 0) {
+void init_millis_timer2(int16_t correct_ms) {
 	timer = 2;
 	power_timer2_enable();
 	#ifdef TIMER2_LOW_FREQ_OSC
