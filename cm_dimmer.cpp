@@ -395,12 +395,12 @@ void CM_DIMMER::SENSOR_EVENT(s_m41xxxx *buf) {
 		if ((buf->VALUE < l3->COND_VALUE_LO) || (buf->VALUE >= l3->COND_VALUE_HI)) true_or_else = 1;
 
 	/* some debug */
-	DBG(DM, F("DM"), lstC.cnl, F(":trigger41, value:"), buf->VALUE, F(", cond_table:"), ctTbl, F(", curStat:"), tr40.cur, F(", nxtStat:"), tr40.nxt, '\n');
+	DBG(DM, F("DM"), lstC.cnl, F(":trigger41, value:"), buf->VALUE, F(", cond_table:"), cond_tbl, F(", curStat:"), tr40.cur, F(", nxtStat:"), tr40.nxt, '\n');
 	//DBG(DM, F("CT_ONDELAY:"), _HEX(l3->CT_ONDELAY), F(", DM_CT_RAMPON:"), _HEX(l3->CT_RAMPON), F(", DM_CT_ON:"), _HEX(l3->CT_ON), F(", DM_CT_OFFDELAY:"), _HEX(l3->CT_OFFDELAY), F(", DM_CT_RAMPOFF:"), _HEX(l3->CT_RAMPOFF), F(", DM_CT_OFF:"), _HEX(l3->CT_OFF), '\n');
 
 	/* forward the request to evaluate the action type; based on the true_or_not flag we use the jump table (lstP + 10) or the else jump table (lstP + 27) */
-	jt = (s_jt*)l3 + (true_or_else) ? 10 : 27;
-	do_jump_table(&buf->COUNTER);
+	//jt = (s_jt*)l3 + (true_or_else) ? 10 : 27;
+	//do_jump_table(&buf->COUNTER);
 
 	//uint8_t bll_cnt[2] = { *(uint8_t*)&buf->BLL, buf->COUNTER };							// as REMOTE message has no VALUE and a different byte order
 	//	if (true_or_not) do_jump_table(lstP.val + 10)
@@ -436,8 +436,10 @@ void CM_DIMMER::do_jump_table(uint8_t *counter) {
 		cm_status.set_value = (toogle_cnt) ? 0 : 200;										// set the dimmer status depending on message counter
 
 	} else if (jt->ACTION_TYPE == DM_ACTION::UPDIM) {
+		do_updim();
 
 	} else if (jt->ACTION_TYPE == DM_ACTION::DOWNDIM) {
+		do_downdim();
 
 	} else if (jt->ACTION_TYPE == DM_ACTION::TOOGLEDIM) {
 
@@ -449,5 +451,14 @@ void CM_DIMMER::do_jump_table(uint8_t *counter) {
 
 	cm_status.message_type = STA_INFO::SND_ACK_STATUS;										// send next time a ack info message
 	cm_status.message_delay.set(100);														// wait a short time to set status
+
+}
+
+void CM_DIMMER::do_updim(void) {
+	// Es wird um eine Helligkeitsstufe hochgedimmt. Die Schrittweite und der Maximalwert lassen sich in anderen Parametern einstellen. (…_DIM_STEP und …_DIM_MAX_LEVEL)
+
+}
+void CM_DIMMER::do_downdim(void) {
+	// Es wird um eine Helligkeitsstufe runtergedimmt.Die Schrittweite und der Minimalwert lassen sich in anderen Parametern einstellen. (…_DIM_STEP und …_DIM_MIN_LEVEL)
 
 }

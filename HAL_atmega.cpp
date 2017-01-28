@@ -133,7 +133,9 @@ void get_eeprom(uint16_t addr, uint8_t len, void *ptr) {
 }
 
 void set_eeprom(uint16_t addr, uint8_t len, void *ptr) {
-	eeprom_write_block((const void*)ptr, (void*)addr, len);									// AVR GCC standard function
+	/* update is much faster, while writes only when needed; needs some byte more space
+	* but otherwise we run in timing issues */
+	eeprom_update_block((const void*)ptr, (void*)addr, len);								// AVR GCC standard function
 }
 
 void clear_eeprom(uint16_t addr, uint16_t len) {
@@ -156,7 +158,7 @@ uint16_t ocrSleep_TIME;															// uint16 is enough - 32 bit here not need
 #endif
 
 #ifdef hasTimer0
-void init_millis_timer0(int16_t correct_ms) {
+void init_millis_timer0(int16_t correct_ms = 0) {
 	timer = 0;
 	power_timer0_enable();
 
@@ -168,7 +170,7 @@ void init_millis_timer0(int16_t correct_ms) {
 #endif
 
 #ifdef hasTimer1
-void init_millis_timer1(int16_t correct_ms) {
+void init_millis_timer1(int16_t correct_ms = 0) {
 	timer = 1;
 	power_timer1_enable();
 
@@ -180,7 +182,7 @@ void init_millis_timer1(int16_t correct_ms) {
 #endif
 
 #ifdef hasTimer2
-void init_millis_timer2(int16_t correct_ms) {
+void init_millis_timer2(int16_t correct_ms = 0) {
 	timer = 2;
 	power_timer2_enable();
 	#ifdef TIMER2_LOW_FREQ_OSC
