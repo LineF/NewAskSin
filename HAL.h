@@ -50,12 +50,14 @@
 * ATMEL hardware, the pin structs are defined in HAL_atmega_<model> while different for each cpu type. here we reference
 * only on the functions defined in HAL_<type>_<model>.
 */
+/*
 extern void set_pin_output(const s_pin_def *ptr_pin);
 extern void set_pin_input(const s_pin_def *ptr_pin);
 extern void set_pin_high(const s_pin_def *ptr_pin);
 extern void set_pin_low(const s_pin_def *ptr_pin);
 extern void set_pin_toogle(const s_pin_def *ptr_pin);
 extern uint8_t get_pin_status(const s_pin_def *ptr_pin);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -64,10 +66,12 @@ extern uint8_t get_pin_status(const s_pin_def *ptr_pin);
 * defined in the hardware specific HAL file. for ATMEL it is defined in HAL_atmega.h.
 * you can also use the arduino standard timer for a specific hardware by interlinking the function call to getmillis()
 */
+/*
 extern void register_PCINT(const s_pin_def *ptr_pin);
 extern uint8_t check_PCINT(const s_pin_def *ptr_pin);
 extern void(*pci_ptr)(uint8_t vec, uint8_t pin, uint8_t flag);
 extern void maintain_PCINT(uint8_t vec);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -75,8 +79,10 @@ extern void maintain_PCINT(uint8_t vec);
 * spi is very hardware supplier related, therefor we define her some external functions which needs to be defined
 * in the hardware specific HAL file. for ATMEL it is defined in HAL_atmega.h.
 */
+/*
 extern void enable_spi(void);
 extern uint8_t spi_send_byte(uint8_t send_byte);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -84,10 +90,12 @@ extern uint8_t spi_send_byte(uint8_t send_byte);
 * eeprom is very hardware supplier related, therefor we define her some external functions which needs to be defined
 * in the hardware specific HAL file. for ATMEL it is defined in HAL_atmega.h.
 */
+/*
 extern void init_eeprom(void);
 extern void get_eeprom(uint16_t addr, uint8_t len, void *ptr);
 extern void set_eeprom(uint16_t addr, uint8_t len, void *ptr);
 extern void clear_eeprom(uint16_t addr, uint16_t len);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -96,11 +104,11 @@ extern void clear_eeprom(uint16_t addr, uint16_t len);
 * in the hardware specific HAL file. for ATMEL it is defined in HAL_atmega.h.
 * you can also use the arduino standard timer for a specific hardware by interlinking the function call to getmillis()
 */
-extern void init_millis_timer0(int16_t correct_ms);
-extern void init_millis_timer1(int16_t correct_ms);
-extern void init_millis_timer2(int16_t correct_ms);
-extern uint32_t get_millis(void);
-extern void add_millis(uint32_t ms);
+//extern void init_millis_timer0(int16_t correct_ms);
+//extern void init_millis_timer1(int16_t correct_ms);
+//extern void init_millis_timer2(int16_t correct_ms);
+//extern uint32_t get_millis(void);
+//extern void add_millis(uint32_t ms);
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -109,9 +117,11 @@ extern void add_millis(uint32_t ms);
 * divider with one pin to enable and another to measure the adc value. both is hardware and vendor related, you will find the
 * code definition in HAL_<vendor>.h
 */
+/*
 extern uint16_t get_internal_voltage(void);
 extern void init_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure);
 extern uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
