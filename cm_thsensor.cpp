@@ -72,14 +72,14 @@ void cm_thsensor::cm_poll(void) {
 	process_send_status_poll(&cm_status, lstC.cnl);											// check if there is some status to send, function call in cmMaster.cpp
 
 	if (!sensTmr.done() ) return;															// step out while timer is still running
-	sensTmr.set((calcSendSlot()*250 + 1000));												// set a new measurement time
+	sensTmr.set((calcSendSlot()*250 + 500));												// set a new measurement time
 
 	measureTH(lstC.cnl, &sensVal);															// call the measurement function
 	//DBG(TH, F("TH: tmp: "), _HEX((uint8_t *)&sensVal.temp, 2), F(", hum: "), sensVal.hum, F(", bat:"), _HEX((uint8_t *)&sensVal.bat, 2), F("\n"));
 	//DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
 	//DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
 	
-	hm->send_WEATHER_EVENT(this, (uint8_t *)&sensVal, sizeof(sensVal));							// prepare the message and send, burst if burstRx register is set
+	hm->send_WEATHER_EVENT(0, this, (uint8_t *)&sensVal);									// prepare the message and send, burst if burstRx register is set
 }
 
 uint32_t cm_thsensor::calcSendSlot(void) {

@@ -137,7 +137,6 @@ public:  //---------------------------------------------------------------------
 	void send_POWER_EVENT_CYCLE(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
 	void send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
 	void send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload);
-	void send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uint8_t payload_len);
 
 
 

@@ -515,7 +515,7 @@ void AS::snd_poll(void) {
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
 		if (*cmm[0]->list[0]->ptr_to_val(REG_CHN0_LED_MODE) & 0x40)							// LED on ?
 			led->set(LED_STAT::SEND_MSG);													// fire the status led
-		//pom->stayAwake(100);																// and stay awake for a short while
+		pom->stayAwake(500);																// and stay awake for a short while (HAVE_DATA may follow)
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
@@ -635,13 +635,13 @@ void AS::process_peer_message_poll(void) {
 	*  while it could have a different length, we calculate the length of the string by a hand over value */
 	sm->mBody.MSG_LEN = pm->payload_len + 9;
 	memcpy(&sm->buf[10], pm->payload_ptr, pm->payload_len);
+	sm->mBody.FLAG.WKMEUP = 1;
 
 	/* send it as pair message if we have no peer registered */
 	if (!pm->peerDB->used_slots()) {														// if no peer is registered, we send the message to the pair
 		memcpy(sm->mBody.RCV_ID, dev_operate.MAID, 3);										// copy in the pair address
 		sm->mBody.MSG_CNT = sm->MSG_CNT;													// set the message counter
 		sm->MSG_CNT++;																		// increase the counter for next time use
-		sm->mBody.FLAG.WKMEUP = 1;
 		pm->clear();																		// nothing to do here any more, while handled as pair message
 		return;																				// and return, otherwise some infos are overwritten
 	}
@@ -959,19 +959,17 @@ void AS::send_POWER_EVENT_CYCLE(uint8_t bidi, CM_MASTER *channel_module, uint8_t
 void AS::send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
 }
 void AS::send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
-}
-void AS::send_WEATHER_EVENT(CM_MASTER *channel_module, uint8_t *ptr_payload, uint8_t payload_len) {
 	if (peer_msg.active) return;
+	peer_msg.active = (bidi) ? MSG_ACTIVE::PEER_BIDI : MSG_ACTIVE::PEER;
 	peer_msg.type = MSG_TYPE::WEATHER_EVENT;
 	peer_msg.peerDB = &channel_module->peerDB;
 	peer_msg.lstP = &channel_module->lstP;
 	peer_msg.lstC = &channel_module->lstC;
 	((uint8_t *)ptr_payload)[0] |= bat->get_status() ? 0x80 : 0x00;
 	peer_msg.payload_ptr = ptr_payload;
-	peer_msg.payload_len = payload_len;
-	peer_msg.active = MSG_ACTIVE::PEER;
+	peer_msg.payload_len = MLEN(MSG_TYPE::WEATHER_EVENT)-9;
 	peer_msg.max_retr = 3;
-	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, payload_len), '\n');
+	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, peer_msg.payload_len), '\n');
 }
 
 
