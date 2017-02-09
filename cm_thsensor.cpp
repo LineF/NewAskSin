@@ -43,8 +43,8 @@ cm_thsensor::cm_thsensor(const uint8_t peer_max) : CM_MASTER(peer_max) {
 
 	initTH(lstC.cnl);																		// call external init function to set the output pins
 
-	cm_status.message_type = STA_INFO::NOTHING;												// send the initial status info
-	cm_status.message_delay.set(0);
+	cm_status.msg_type = STA_INFO::NOTHING;												// send the initial status info
+	cm_status.msg_delay.set(0);
 
 	sensTmr.set(3000);																		// wait for first measurement being completed
 
@@ -61,8 +61,8 @@ cm_thsensor::cm_thsensor(const uint8_t peer_max) : CM_MASTER(peer_max) {
 * @brief Received message handling forwarded by AS::processMessage
 */
 void cm_thsensor::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
-	cm_status.message_type = STA_INFO::SND_ACTUATOR_STATUS;										// send next time a info status message
-	cm_status.message_delay.set(50);														// wait a short time to set status
+	cm_status.msg_type = STA_INFO::SND_ACTUATOR_STATUS;										// send next time a info status message
+	cm_status.msg_delay.set(50);															// wait a short time to set status
 
 	DBG(TH, F("TH:CONFIG_STATUS_REQUEST\n"));
 }

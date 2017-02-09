@@ -380,7 +380,7 @@ void process_send_status_poll(s_cm_status *cm, uint8_t cnl) {
 	else if (cm->value >  cm->set_value) cm->f.DOWN = 1;
 
 	if (!cm->fsm_delay.done())               cm->f.DELAY = 1;
-DBG(CM, F("CM: delay.done: "), cm->delay.done(), F(", f.DELAY: "), cm->f.DELAY, F("\n"));
+	DBG(CM, F("CM: fsm_delay.done: "), cm->fsm_delay.done(), F(", f.DELAY: "), cm->f.DELAY, F("\n"));
 	//if (bat.getStatus())                 cm->f.LOWBAT = 1;;
 
 	/* check which type has to be send - if it is an ACK and modDUL != 0, then set timer for sending a actuator status */
