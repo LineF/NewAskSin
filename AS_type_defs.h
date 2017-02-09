@@ -47,6 +47,7 @@ typedef struct ts_dev_operate {
 typedef struct ts_cm_status {
 	uint8_t   value;																		// module status byte, needed for list3 modules to answer status requests
 	uint8_t   set_value;																	// status to set on the Relay channel
+	uint8_t   sum_value;																	// summary value for virtual channels
 	union {
 		struct {
 			uint8_t NA : 3;
@@ -59,9 +60,12 @@ typedef struct ts_cm_status {
 		uint8_t   flag;																		// module down up low battery byte
 	};
 	uint8_t   inhibit = 0;																	// store for inhibit message
-	waitTimer delay;																		// delay timer for relay
-	uint8_t	  message_type;																	// indicator for sendStatus function
-	waitTimer message_delay;																// message timer for sending status
+	waitTimer fsm_delay;																	// finite state machine delay timer
+	waitTimer set_delay;																	// optional timer to pause between set values
+
+	// to schedule next message by type and the delay to wait for
+	uint8_t	  msg_type;																		// indicator for sendStatus function
+	waitTimer msg_delay;																	// message timer for sending status
 } s_cm_status;
 
 /*

@@ -18,14 +18,15 @@ void setup() {
 	//DDRB = DDRC = DDRD = 0x00;															// everything as input
 	//PORTB = PORTC = PORTD = 0x00;															// pullup's off
 
+	DBG_START(SER, F("HM_PB_6_WM55\n"));
+	DBG(SER, F(LIB_VERSION_STRING));
+
 	// - AskSin related ---------------------------------------
 	init_millis_timer0();																	// init timer0
 	hm->init();																				// init the asksin framework
 
-	DBG_START(SER, F("HM_PB_6_WM55\n"));
-	DBG(SER, F(LIB_VERSION_STRING));
-
 	sei();																					// enable interrupts
+
 }
 
 void loop() {
@@ -38,9 +39,9 @@ void loop() {
 
 
 //- user functions --------------------------------------------------------------------------------------------------------
-void CM_DIMMER::initDimmer(uint8_t channel) {
+void CM_DIMMER::init_dimmer(uint8_t virtual_group, uint8_t virtual_channel, uint8_t channel) {
 // setting the relay pin as output, could be done also by pinMode(3, OUTPUT)
-	DBG(SER, F("initDim: "), channel, '\n' );
+	DBG(SER, F("initDim- vrt_grp: "), virtual_group, F(", vrt_cnl: "), virtual_channel, F(", cnl: "), channel, '\n');
 	
 	power_timer2_enable();																	// enable the timer2 in power management
 
@@ -52,9 +53,9 @@ void CM_DIMMER::initDimmer(uint8_t channel) {
 	TCCR2A |= 1 << COM2B1;
 }
 
-void CM_DIMMER::switchDimmer(uint8_t channel, uint8_t status) {
+void CM_DIMMER::switch_dimmer(uint8_t virtual_group, uint8_t virtual_channel, uint8_t channel, uint8_t status) {
 // switching the relay, could be done also by digitalWrite(3,HIGH or LOW)
-	//DBG(SER, F("switchDim: "), channel, ", ", status, '\n' );
+	//DBG(SER, F("switchDim: "), cnl_group, channel, ", ", status, '\n' );
 
 	uint16_t x = status * 255;
 	x /= 200;																				// status = 0 to 200, but PWM needs 255 as maximum
