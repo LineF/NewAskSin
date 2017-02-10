@@ -250,7 +250,7 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 	set_pin_output(ptr_enable);																// set the enable pin as output
 	set_pin_low(ptr_enable);																// and to gnd, while measurement goes from VCC over the resistor network to GND
 	set_pin_input(ptr_measure);																// set the ADC pin as input
-	//set_pin_high(ptr_measure);
+	set_pin_low(ptr_measure);																// switch off pull-up resistor to get correct measurement
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
 	uint32_t result = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
@@ -265,8 +265,8 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 }
 
 uint16_t get_adc_value(uint8_t reg_admux) {
-	// save power reduction register
-	
+	uint16_t adcValue = 0;
+
 	/* enable and set adc */
 	power_adc_enable();																		// start adc 
 
@@ -274,19 +274,20 @@ uint16_t get_adc_value(uint8_t reg_admux) {
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1);										// enable ADC and set ADC pre scaler
 
 	/* measure the adc */
-	_delay_ms(2);																			// wait for Vref to settle
+	for (uint8_t i = 0; i < BAT_NUM_MESS_ADC + BAT_DUMMY_NUM_MESS_ADC; i++) {				// take samples in a round
+		ADCSRA |= (1 << ADSC);																// start conversion
+		while (ADCSRA & (1 << ADSC)) {}														// wait for conversion complete
 
-	ADCSRA |= _BV(ADSC);																	// start conversion
-	while (bit_is_set(ADCSRA, ADSC));														// measuring
+		if (i >= BAT_DUMMY_NUM_MESS_ADC) {													// we discard the first dummy measurements
+			adcValue += ADCW;
+		}
+	}
 
-	//uint8_t low = ADCL;																	// must read ADCL first - it then locks ADCH  
-	//uint8_t high = ADCH;																	// unlocks both
-	//uint16_t result = (high << 8) | low;
-	uint16_t result = ADCW;																	// read register once, alternative above 
+	ADCSRA &= ~(1 << ADEN);																	// ADC disable
+	adcValue = adcValue / BAT_NUM_MESS_ADC;													// divide adcValue by amount of measurements
 
-	/* restore power reduction register and stop adc measurement */
 	power_adc_disable();																	// stop adc
-	return result;
+	return adcValue;
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
@@ -406,6 +407,9 @@ ISR(WDT_vect) {
 void setSleep(void) {
 	// some power savings by switching off some CPU functionality
 	ADCSRA = 0;																				// disable ADC
+	DIDR1 |= _BV(AIN0D) | _BV(AIN1D);														// switch off analog comparator input buffers
+	DIDR0 |= _BV(ADC0D) | _BV(ADC1D) | _BV(ADC2D) | _BV(ADC3D)
+			| _BV(ADC4D) | _BV(ADC5D);														// switch off adc input buffers
 	backupPwrRegs();																		// save content of power reduction register and set it to all off
 
 	sleep_enable();																			// enable sleep
