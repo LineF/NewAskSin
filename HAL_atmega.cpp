@@ -272,15 +272,14 @@ uint16_t get_adc_value(uint8_t reg_admux) {
 
 	ADMUX = reg_admux;																		// set adc
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1);										// enable ADC and set ADC pre scaler
+	_delay_ms(2);
 
 	/* measure the adc */
-	for (uint8_t i = 0; i < BAT_NUM_MESS_ADC + BAT_DUMMY_NUM_MESS_ADC; i++) {				// take samples in a round
+	for (uint8_t i = 0; i < BAT_NUM_MESS_ADC; i++) {										// take samples in a round
 		ADCSRA |= (1 << ADSC);																// start conversion
-		while (ADCSRA & (1 << ADSC)) {}														// wait for conversion complete
-
-		if (i >= BAT_DUMMY_NUM_MESS_ADC) {													// we discard the first dummy measurements
-			adcValue += ADCW;
-		}
+		while (ADCSRA & (1 << ADSC))														// wait for conversion complete
+			;
+		adcValue += ADCW;
 	}
 
 	ADCSRA &= ~(1 << ADEN);																	// ADC disable

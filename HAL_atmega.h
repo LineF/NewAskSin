@@ -54,7 +54,6 @@ struct s_pin_def {
 
 
 #define BAT_NUM_MESS_ADC                  20								// real measures to get the best average measure
-#define BAT_DUMMY_NUM_MESS_ADC            40								// dummy measures to get the ADC working
 
 
 /*************************************************************************************************************************/
