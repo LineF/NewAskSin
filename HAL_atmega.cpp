@@ -1,7 +1,10 @@
 #include "HAL_atmega.h"
 #include "as_power.h"
+#include "as_status_led.h"
 
 extern POM *pom;
+extern LED *led;
+extern uint8_t ledFreqTest;
 
 //-- pin functions --------------------------------------------------------------------------------------------------------
 void set_pin_output(const s_pin_def *ptr_pin) {
@@ -20,7 +23,7 @@ void set_pin_low(const s_pin_def *ptr_pin) {
 	*ptr_pin->PORTREG &= ~_BV(ptr_pin->PINBIT);
 }
 
-void set_pin_toogle(const s_pin_def *ptr_pin) {
+void set_pin_toggle(const s_pin_def *ptr_pin) {
 	*ptr_pin->PORTREG ^= _BV(ptr_pin->PINBIT);
 }
 
@@ -234,6 +237,8 @@ ISR(TIMER2_COMPA_vect) {
 		if (timer == 2) ++milliseconds;
 		//setPinCng(LED_RED_PORT, LED_RED_PIN);													// for generating a 1 KHz signal on LED pin to calibrate CPU
 	#endif
+	if (ledFreqTest)
+		set_pin_toggle(led->pin_red);
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 

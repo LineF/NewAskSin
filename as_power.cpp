@@ -9,6 +9,7 @@
 #include "newasksin.h"
 
 //PW pom;																						// declare power management, defined in Power.h
+extern uint8_t ledFreqTest;
 
 // private:		//---------------------------------------------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ void POM::poll(void) {
 	//if (checkWakeupPin()) return;															// wakeup pin active
 	
 	// some communication still active, jump out
-	if ((snd_msg.active) || (list_msg.active) || (config_mode.active) || (pair_mode.active) || (cbn->button_check.armed) || (led->op_pat[0].stat)) return;
+	if ((snd_msg.active) || (list_msg.active) || (config_mode.active) || (pair_mode.active) || (cbn->button_check.armed) || (led->op_pat[0].stat) || ledFreqTest) return;
 	
 	#ifdef PW_DBG																			// only if pw debug is set
 		dbg << '.';																			// ...and some information

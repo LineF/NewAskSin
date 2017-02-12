@@ -72,8 +72,9 @@ void cm_thsensor::cm_poll(void) {
 	process_send_status_poll(&cm_status, lstC.cnl);											// check if there is some status to send, function call in cmMaster.cpp
 
 	if (!sensTmr.done() ) return;															// step out while timer is still running
-	sensTmr.set((calcSendSlot()*250 + 500));												// set a new measurement time
-	DBG(TH, F("TH: slotTime:"), calcSendSlot()*250, F(", MSG:"), snd_msg.MSG_CNT, F("\n"));
+	int8_t cmo = *cmm[0]->list[0]->ptr_to_val(REG_CHN0_CYCL_MSG_OFFSET);
+	sensTmr.set((calcSendSlot()*250 + cmo*50));												// set a new measurement time
+	DBG(TH, F("TH: slotTime:"), calcSendSlot()*250, F(", cmo:"), cmo*50, F(", MSG:"), _HEX(snd_msg.MSG_CNT), F("\n"));
 
 	measureTH(lstC.cnl, &sensVal);															// call the measurement function
 	//DBG(TH, F("TH: tmp: "), _HEX((uint8_t *)&sensVal.temp, 2), F(", hum: "), sensVal.hum, F(", bat:"), _HEX((uint8_t *)&sensVal.bat, 2), F("\n"));
