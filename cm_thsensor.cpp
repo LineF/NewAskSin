@@ -73,6 +73,7 @@ void cm_thsensor::cm_poll(void) {
 
 	if (!sensTmr.done() ) return;															// step out while timer is still running
 	sensTmr.set((calcSendSlot()*250 + 500));												// set a new measurement time
+	DBG(TH, F("TH: slotTime:"), calcSendSlot()*250, F(", MSG:"), snd_msg.MSG_CNT, F("\n"));
 
 	measureTH(lstC.cnl, &sensVal);															// call the measurement function
 	//DBG(TH, F("TH: tmp: "), _HEX((uint8_t *)&sensVal.temp, 2), F(", hum: "), sensVal.hum, F(", bat:"), _HEX((uint8_t *)&sensVal.bat, 2), F("\n"));
@@ -89,7 +90,7 @@ uint32_t cm_thsensor::calcSendSlot(void) {
 	a[2] = dev_ident.HMID[0];
 	a[3] = 0;
 
-	uint32_t result = ((( *(uint32_t*)&a << 8) | (snd_msg.mBody.MSG_CNT)) * 1103515245 + 12345) >> 16;
+	uint32_t result = ((( *(uint32_t*)&a << 8) | (snd_msg.MSG_CNT)) * 1103515245 + 12345) >> 16;
 	result = (result & 0xFF) + 480;
 
 	return result;
