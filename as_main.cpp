@@ -587,6 +587,7 @@ void AS::process_peer_message_poll(void) {
 	/* checks if a peer message needs to be processed and if send is busy */
 	if (!pm->active) return;																// is there a peer message to send?
 	if (sm->active) return;																	// has send function something else to do first?
+	if (!pm->timer.done()) return;
 
 	/* if we are here, it has one of the following reasons, first time call to send a peer message, prepare the pre-requisites,
 	*  or we have sent a message earlier which is processed now, check if it was the last message to send, or process the next slot */
@@ -651,6 +652,7 @@ void AS::process_peer_message_poll(void) {
 	/* set the peer address */
 	memcpy(sm->mBody.RCV_ID, pm->peerDB->get_peer(pm->slot_cnt), 3);
 	sm->temp_max_retr = 1;
+	pm->timer.set(400);
 
 	/* we have at least one peer to process, load the respective list4 to check if a burst is needed */
 	pm->lstP->load_list(pm->slot_cnt);														// check if we need a burst, load the respective peer list

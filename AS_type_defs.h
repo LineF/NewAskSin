@@ -466,6 +466,7 @@ typedef struct ts_peer_msg {
 	uint8_t       slot_tbl[8];			// peer slot table
 	uint8_t       slot_cnt;				// peer slot counter
 	uint8_t       retr_cnt;				// current retry counter for peer messages
+	waitTimer     timer;
 
 	void set_slot(uint8_t idx) {		// set bit in slot table
 		slot_tbl[idx >> 3] |= (1 << (idx & 0x07));
