@@ -271,7 +271,7 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 
 uint16_t get_adc_value(uint8_t reg_admux) {
 	uint16_t adcValue = 0;
-
+	/* enable and set adc */
 	/* enable and set adc */
 	power_adc_enable();																		// start adc 
 

@@ -379,9 +379,8 @@ void process_send_status_poll(s_cm_status *cm, uint8_t cnl) {
 	if (cm->value <  cm->set_value) cm->f.UP = 1;
 	else if (cm->value >  cm->set_value) cm->f.DOWN = 1;
 
-	if (!cm->fsm_delay.done())               cm->f.DELAY = 1;
-	DBG(CM, F("CM: fsm_delay.done: "), cm->fsm_delay.done(), F(", f.DELAY: "), cm->f.DELAY, F("\n"));
-	//if (bat.getStatus())                 cm->f.LOWBAT = 1;;
+	if (!cm->sm_delay.done())               cm->f.DELAY = 1;
+	//if (bat->getStatus())                cm->f.LOWBAT = 1;;
 
 	/* check which type has to be send - if it is an ACK and modDUL != 0, then set timer for sending a actuator status */
 	if (cm->msg_type == STA_INFO::SND_ACK_STATUS)
@@ -394,7 +393,7 @@ void process_send_status_poll(s_cm_status *cm, uint8_t cnl) {
 	/* check if it is a stable status, otherwise schedule next check */
 	if (cm->f.DELAY) {																		// status is currently changing
 		cm->msg_type = STA_INFO::SND_ACTUATOR_STATUS_AGAIN;									// send next time a info status message
-		cm->msg_delay.set(cm->fsm_delay.remain() + 100);									// check again when timer is finish
+		cm->msg_delay.set(cm->sm_delay.remain() + 100);									// check again when timer is finish
 
 	} else cm->msg_type = STA_INFO::NOTHING;												// no need for next time
 
