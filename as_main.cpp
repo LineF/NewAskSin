@@ -484,6 +484,7 @@ void AS::snd_poll(void) {
 		} else if (sm->active == MSG_ACTIVE::BROADCAST) {
 			/* broadcast means - msg_cnt from snd_msg struct, rcv_id is 00 00 00, bidi not needed */
 			memset(sm->mBody.RCV_ID, 0, 3);													// clear the receive address
+			sm->mBody.FLAG.CFG = 1;
 			sm->mBody.MSG_CNT = sm->MSG_CNT;												// use own message counter
 			sm->MSG_CNT++;																	// increase counter for next try
 
@@ -969,17 +970,13 @@ void AS::send_POWER_EVENT_CYCLE(uint8_t bidi, CM_MASTER *channel_module, uint8_t
 void AS::send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
 }
 void AS::send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
-	if (peer_msg.active) return;
-	peer_msg.active = (bidi) ? MSG_ACTIVE::PEER_BIDI : MSG_ACTIVE::PEER;
-	peer_msg.type = MSG_TYPE::WEATHER_EVENT;
-	peer_msg.peerDB = &channel_module->peerDB;
-	peer_msg.lstP = &channel_module->lstP;
-	peer_msg.lstC = &channel_module->lstC;
-	((uint8_t *)ptr_payload)[0] |= bat->get_status() ? 0x80 : 0x00;
-	peer_msg.payload_ptr = ptr_payload;
-	peer_msg.payload_len = MLEN(MSG_TYPE::WEATHER_EVENT)-9;
-	peer_msg.max_retr = 3;
-	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, peer_msg.payload_len), '\n');
+	memcpy(snd_msg.buf + 10, ptr_payload, MLEN(MSG_TYPE::WEATHER_EVENT)-9);					// payload starts at byte 10 and has a length of 16 byte
+	snd_msg.buf[10] |= bat->get_status() ? 0x80 : 0x00;
+
+	snd_msg.active = MSG_ACTIVE::BROADCAST;													// for address, counter and to make it active
+	snd_msg.type = MSG_TYPE::WEATHER_EVENT;													// length and flags are set within the snd_msg struct
+	snd_msg.mBody.FLAG.WKMEUP = 1;
+	DBG(CM, F("CM:send_WEATHER_EVENT peers:"), channel_module->peerDB.used_slots(), F(", payload:"), _HEX(ptr_payload, MLEN(MSG_TYPE::WEATHER_EVENT)-9), '\n');
 }
 
 
