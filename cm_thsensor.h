@@ -58,6 +58,9 @@ public:  //---------------------------------------------------------------------
 
 	virtual void cm_poll(void);																// poll function, driven by HM loop
 	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);
+	virtual void info_peer_add(s_m01xx01 *buf);
+	virtual void info_peer_remove(s_m01xx02 *buf);
+
 };
 
 extern void initTH(uint8_t channel);														// functions in user sketch needed

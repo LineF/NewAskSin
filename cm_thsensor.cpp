@@ -67,6 +67,16 @@ void cm_thsensor::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
 	DBG(TH, F("TH:CONFIG_STATUS_REQUEST\n"));
 }
 
+void cm_thsensor::info_peer_add(s_m01xx01 *buf) {
+//	CM_MASTER::info_peer_add(buf);
+	cnl0Change();
+}
+
+void cm_thsensor::info_peer_remove(s_m01xx02 *buf) {
+//	CM_MASTER::info_peer_remove(buf);
+	cnl0Change();
+}
+
 void cm_thsensor::cm_poll(void) {
 
 	process_send_status_poll(&cm_status, lstC.cnl);											// check if there is some status to send, function call in cmMaster.cpp

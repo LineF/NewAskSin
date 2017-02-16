@@ -40,6 +40,15 @@ void CM_MASTER::info_peer_add(s_m01xx01 *buf) {
 	DBG(CM, F("CM:info_peer_add, peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
 }
 
+/**
+* we received an peer remove event, which means, there was a peer removed in this respective channel
+* 1st 3 bytes shows the peer address, 4th and 5th byte gives the peer channel
+* no need for sending an answer here, for information only
+*/
+void CM_MASTER::info_peer_remove(s_m01xx02 *buf) {
+	DBG(CM, F("CM:info_peer_remove, peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
+}
+
 void CM_MASTER::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
 	DBG(CM, F("CM:request_peer_defaults, idx:"), _HEX(idx), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n' );
 }
@@ -76,7 +85,7 @@ void CM_MASTER::set_toggle(void) {
 * request is forwarded by the AS:processMessage function
 */
 void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
-	uint8_t *temp_peer = new uint8_t[4];													// temp byte array to load peer addresses
+	uint8_t temp_peer[4];																	// temp byte array to load peer addresses
 	uint8_t ret_byte = 0;																	// prepare a placeholder for success reporting
 
 	for (uint8_t i = 0; i < 2; i++) {														// standard gives 2 peer channels
@@ -108,7 +117,7 @@ void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
 * request is forwarded by the AS:processMessage function
 */
 void CM_MASTER::CONFIG_PEER_REMOVE(s_m01xx02 *buf) {
-	uint8_t *temp_peer = new uint8_t[4];													// temp byte array to load peer addresses
+	uint8_t temp_peer[4];																	// temp byte array to load peer addresses
 	uint8_t ret_byte = 0;																	// prepare a placeholder for success reporting
 
 	for (uint8_t i = 0; i < 2; i++) {														// standard gives 2 peer channels
@@ -123,6 +132,7 @@ void CM_MASTER::CONFIG_PEER_REMOVE(s_m01xx02 *buf) {
 			ret_byte++;																		// increase success
 		}
 	}
+	info_peer_remove(buf);																	// inform the user module of the removed peer
 	DBG(CM, F("CM:CONFIG_PEER_REMOVE, cnl:"), buf->MSG_CNL, F(", peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
 	hm->check_send_ACK_NACK(ret_byte);
 }
