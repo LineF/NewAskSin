@@ -37,8 +37,9 @@
 
 //#define CM_DBG					// Channel Master module (cmMaster.cpp)
 //#define MN_DBG					// Maintenance channel module (cmMaintenance.cpp)
+//#define SW_DBG					// Switsch channel module (cmSwitch.cpp)
 //#define TH_DBG					// TH channel module (cm_thsensor.cpp)
-#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
+//#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
 //#define RE_DBG					// Remote channel module (cmRemote.cpp)
 
 
@@ -127,6 +128,13 @@ template<class T> inline Print &operator ,(Print &obj, T arg) { return obj << ar
 #endif
 
 /* channel module switch */
+#ifdef SW_DBG
+	#define DBG_SW(...) Serial ,__VA_ARGS__
+#else
+	#define DBG_SW(...) 
+#endif
+
+/* channel module th sensor */
 #ifdef TH_DBG
 	#define DBG_TH(...) Serial ,__VA_ARGS__
 #else
