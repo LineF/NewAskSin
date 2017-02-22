@@ -251,6 +251,12 @@ uint16_t get_internal_voltage(void) {
 }
 
 uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2) {
+	#define BAT_OVERSAMPLING 12
+	static uint16_t values[BAT_OVERSAMPLING];
+	static uint8_t v_idx;
+	uint8_t cnt = 0;
+	uint32_t result = 0;
+
 	/* set the pins to enable measurement */
 	set_pin_output(ptr_enable);																// set the enable pin as output
 	set_pin_low(ptr_enable);																// and to gnd, while measurement goes from VCC over the resistor network to GND
@@ -258,7 +264,14 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 	set_pin_low(ptr_measure);																// switch off pull-up resistor to get correct measurement
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
-	uint32_t result = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
+	values[v_idx++] = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
+	if (v_idx >= BAT_OVERSAMPLING) v_idx = 0;
+
+	for (uint8_t i = 0; i < BAT_OVERSAMPLING; i++)
+		if (values[i] > 0)
+			result += values[i], cnt++;
+	result = (cnt > 0) ? result / cnt : 0;
+	
 	result = ((result * ref_v_external) / 102) / z1;										// calculate vcc between gnd and measurement pin 
 	result = result * (z1 + z2) / 100;														// interpolate result to vcc 
 
