@@ -132,7 +132,7 @@ void    CC1101::init(void) {
 		//CC1101_FREQ0,   0x6A,
 		CC1101_FREQ2,     0x21,						// 868.289551 MHz
 		CC1101_FREQ1,     0x65,
-		CC1101_FREQ0,     0x6A, //50
+		CC1101_FREQ0,     0x50,
 		CC1101_MDMCFG4,   0xC8,
 		CC1101_MDMCFG3,   0x93,
 		CC1101_MDMCFG2,   0x03,						// digital DC blocking filter enabled (better sensitivity), 2-FSK, Manchester encoding/decoding disabled, SYNC_MODE[2:0] 30/32 sync word bits detected
