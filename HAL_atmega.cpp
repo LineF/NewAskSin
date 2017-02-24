@@ -1,3 +1,4 @@
+#include "00_debug-flag.h"
 #include "HAL_atmega.h"
 #include "as_power.h"
 #include "as_status_led.h"
@@ -250,8 +251,12 @@ uint16_t get_internal_voltage(void) {
 	return (uint8_t)result;																	// Vcc in millivolts
 }
 
+#define OVS_BITS			2																// raise ADC resolution from 10 to (10 + OVS_BITS) Bits
+#define OVS_FACT			(1 << (OVS_BITS*2))												// results in this oversampling factor
+#define BAT_OVERSAMPLING	12																// averaging this number of measurments over time
+#define MAX_ADC				(1024 * (1<<OVS_BITS) - 1)										// voltage calculation must be corrected, too
+
 uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2) {
-	#define BAT_OVERSAMPLING 12
 	static uint16_t values[BAT_OVERSAMPLING];
 	static uint8_t v_idx;
 	uint8_t cnt = 0;
@@ -265,15 +270,21 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
 	values[v_idx++] = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
+	//DBG(SER, F("bat:curr:"), values[v_idx-1]);
 	if (v_idx >= BAT_OVERSAMPLING) v_idx = 0;
 
 	for (uint8_t i = 0; i < BAT_OVERSAMPLING; i++)
 		if (values[i] > 0)
 			result += values[i], cnt++;
 	result = (cnt > 0) ? result / cnt : 0;
+
+	//for (uint8_t i = 0; i < BAT_OVERSAMPLING; i++)
+	//	DBG(SER, F(", "), values[i]);
+	//DBG(SER, F(", avg:"), result);
 	
-	result = ((result * ref_v_external) / 102) / z1;										// calculate vcc between gnd and measurement pin 
+	result = ((result * ref_v_external) / (MAX_ADC/10)) / z1;								// calculate vcc between gnd and measurement pin 
 	result = result * (z1 + z2) / 100;														// interpolate result to vcc 
+	//DBG(SER, F(", volts:"), result, F("\n"));
 
 	/* finally, we set both pins as input again to waste no energy over the resistor network to VCC */
 	set_pin_input(ptr_enable);	
@@ -283,8 +294,9 @@ uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_
 }
 
 uint16_t get_adc_value(uint8_t reg_admux) {
-	uint16_t adcValue = 0;
-	/* enable and set adc */
+	uint16_t ovs = 0;																		// use uint32_t with OVS_BITS > 3
+	uint16_t adc_val;
+
 	/* enable and set adc */
 	power_adc_enable();																		// start adc 
 
@@ -292,19 +304,23 @@ uint16_t get_adc_value(uint8_t reg_admux) {
 	ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1);										// enable ADC and set ADC pre scaler
 	_delay_ms(2);
 
+	//DBG(SER, F("bat_ovs:"));
 	/* measure the adc */
-	for (uint8_t i = 0; i < BAT_NUM_MESS_ADC; i++) {										// take samples in a round
+	for (uint8_t i = 0; i < OVS_FACT; i++) {												// take samples in a round
 		ADCSRA |= (1 << ADSC);																// start conversion
 		while (ADCSRA & (1 << ADSC))														// wait for conversion complete
 			;
-		adcValue += ADCW;
+		adc_val = ADCW;
+		ovs += adc_val;
+		//DBG(SER, adc_val, F(" "));
 	}
 
 	ADCSRA &= ~(1 << ADEN);																	// ADC disable
-	adcValue = adcValue / BAT_NUM_MESS_ADC;													// divide adcValue by amount of measurements
+	ovs >>= OVS_BITS;																		// remove half of oversampled bits
+	//DBG(SER, F("ovs_val:"), ovs, F("\n"));
 
 	power_adc_disable();																	// stop adc
-	return adcValue;
+	return ovs;
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
