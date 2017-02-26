@@ -13,7 +13,7 @@
 /*
 *  @brief definition of all classes which are necassary to run asksin
 */
-AES *aes = new HAS_AES();
+AES *aes = new NO_AES();
 COM *com = new CC1101(&pin_B4, &pin_B3, &pin_B5, &pin_B2, &pin_D2);
 CBN *cbn = new CBN(1, &pin_B0);
 LED *led = new LED(&pin_D6, &pin_D4);
@@ -83,6 +83,15 @@ const uint8_t dev_static[] PROGMEM = {             // testID
 void everyTimeStart(void) {
 	DBG(SER, F("HMID: "), _HEX(dev_ident.HMID, 3), F(", MAID: "), _HEX(dev_operate.MAID, 3), F(", CNL: "), cnl_max, F("\n\n"));	// some debug
 
+	/* write the internal key address into the channel */
+	uint8_t t_peer[4];																		// create a peer buffer
+	memcpy_P(t_peer, HMSerialData, 3);														// peer must be our hmid
+	for (uint8_t i = 1; i < cnl_max; i++) {													// step through the channels, starting by channel 1
+		t_peer[3] = i;																		// write the respective channel in the peer address
+		cmm[i]->peerDB.set_peer(0, t_peer);													// make peer available, otherwise error in the config tool
+		cmm[i]->lstP.load_default();
+		cmm[i]->lstP.save_list(0);
+	}
 }
 
 
