@@ -102,12 +102,12 @@ extern const uint8_t dev_static[] PROGMEM;
 //#define create<x, y, z>(...)    z my_#z(#__VA_ARGS); x y = &my_#z;  
 
 extern AS hm;
-extern AES *aes;
-extern COM *com;
-extern CBN *cbn;
-extern LED *led;
-extern BAT *bat;
-extern POM *pom;
+extern AES &aes;
+extern COM &com;
+extern CBN cbn;
+extern LED led;
+extern BAT &bat;
+extern POM pom;
 
 /* as there is no way to get the channel by setting up the pointer array for channel modules we use this
 *  byte to identify the channel we are actually setting up, increased in the constructor...

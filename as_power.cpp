@@ -48,7 +48,7 @@ void POM::poll(void) {
 	//if (checkWakeupPin()) return;															// wakeup pin active
 	
 	// some communication still active, jump out
-	if ((snd_msg.active) || (list_msg.active) || (config_mode.active) || (pair_mode.active) || (cbn->button_check.armed) || (led->op_pat[0].stat) || ledFreqTest) return;
+	if ((snd_msg.active) || (list_msg.active) || (config_mode.active) || (pair_mode.active) || (cbn.button_check.armed) || (led.op_pat[0].stat) || ledFreqTest) return;
 	
 	#ifdef PW_DBG																			// only if pw debug is set
 		dbg << '.';																			// ...and some information
@@ -58,7 +58,7 @@ void POM::poll(void) {
 
 	if (pwrMode == POWER_MODE_WAKEUP_ONRADIO) {												// check communication on power mode 1
 
-		tmpCCBurst = com->detect_burst();
+		tmpCCBurst = com.detect_burst();
 		if ((tmpCCBurst) && (!chkCCBurst)) {												// burst detected for the first time
 			chkCCBurst = 1;																	// set the flag
 			
@@ -86,8 +86,8 @@ void POM::poll(void) {
 	}
 
 	// if we are here, we could go sleep. set cc module idle, switch off led's and sleep
-	com->set_idle();																		// set communication module to idle
-	led->set(LED_STAT::NONE);																// switch off all led's
+	com.set_idle();																		// set communication module to idle
+	led.set(LED_STAT::NONE);																// switch off all led's
 
 	// start the respective watchdog timers
 	cli();

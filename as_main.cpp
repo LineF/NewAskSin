@@ -73,10 +73,10 @@ void AS::init(void) {
 	everyTimeStart();
 
 	/* - Initialize the hardware. All this functions are defined in HAL.h and HAL_extern.h 	*/
-	com->init();																			// init the rf module
-	cbn->init();																			// init the config button
-	led->init();																			// initialize the leds
-	led->set(LED_STAT::WELCOME);															// show something as status
+	com.init();																			// init the rf module
+	cbn.init();																			// init the config button
+	led.init();																			// initialize the leds
+	led.set(LED_STAT::WELCOME);															// show something as status
 
 }
 
@@ -91,8 +91,8 @@ void AS::poll(void) {
 
 	/* copy the decoded data into the receiver module if something was received
 	*  and poll the received buffer, it checks if something is in the queue  */
-	if (com->has_data()) {																	// check if something is in the cc1101 receive buffer
-		com->rcv_data(rcv_msg.buf);															// if yes, get it into our receive processing struct
+	if (com.has_data()) {																	// check if something is in the cc1101 receive buffer
+		com.rcv_data(rcv_msg.buf);															// if yes, get it into our receive processing struct
 		rcv_poll();																			// and poll the receive function to get intent and some basics
 	}
 	if (rcv_msg.buf[0]) process_message();													// check if we have to handle the receive buffer
@@ -132,15 +132,15 @@ void AS::poll(void) {
 	if (pair_mode.active) { 
 		if (pair_mode.timer.done()) {
 			pair_mode.active = 0;
-			isEmpty(dev_operate.MAID, 3)? led->set(LED_STAT::PAIR_ERROR) : led->set(LED_STAT::PAIR_SUCCESS);
+			isEmpty(dev_operate.MAID, 3)? led.set(LED_STAT::PAIR_ERROR) : led.set(LED_STAT::PAIR_SUCCESS);
 		}
 	}
 
 
-	cbn->poll();																			// poll the config button
-	led->poll();																			// poll the led's
-	bat->poll();																			// poll the battery check
-	pom->poll();																			// poll the power management
+	cbn.poll();																			// poll the config button
+	led.poll();																			// poll the led's
+	bat.poll();																			// poll the battery check
+	pom.poll();																			// poll the power management
 }
 
 
@@ -271,7 +271,7 @@ void AS::process_message(void) {
 			case BY11(MSG_TYPE::CONFIG_WRITE_INDEX2):
 
 				uint8_t *AES = pCM->lstC.ptr_to_val(0x08);
-				if ((AES) && (*AES) && (aes->active != MSG_AES::AES_REPLY_OK)) {			// check if we need AES confirmation
+				if ((AES) && (*AES) && (aes.active != MSG_AES::AES_REPLY_OK)) {			// check if we need AES confirmation
 					send_AES_REQ();															// send a request
 					return;																	// nothing to do any more, wait and see
 				}
@@ -297,10 +297,9 @@ void AS::process_message(void) {
 			/* AES request is a speciality in this section, pair or peer is sending this request to challenge the last command we had send,
 			*  we have to use the 6 byte payload and generate a SEND_AES type message (* 0x02 04 ff 11 * - AES_REQ) */
 			//dbg << "AES_REQ, ind: " << _HEX(rcv_msg.buf[17]) << ", data: " << _HEX(rcv_msg.buf+11, 6) << '\n';
-
-			aes->prep_AES_REPLY(dev_ident.HMKEY, dev_ident.HMKEY_INDEX, rcv_msg.buf + 11, snd_msg.buf);// prepare the reply
+			aes.prep_AES_REPLY(dev_ident.HMKEY, dev_ident.HMKEY_INDEX, rcv_msg.buf + 11, snd_msg.buf);// prepare the reply
 			snd_msg.clear();																// clear send message
-			send_AES_REPLY(aes->prev_buf);													// and send it
+			send_AES_REPLY(aes.prev_buf);													// and send it
 
 		} else if (rcv_msg.mBody.MSG_CNT == snd_msg.mBody.MSG_CNT) {
 			/* at the moment we need the ACK message only for avoiding resends, so let the send_msg struct know about
@@ -316,7 +315,7 @@ void AS::process_message(void) {
 			snd_msg.retr_cnt = 0xff;														// we received an answer to our request, no need to resend
 			return;
 		}
-		aes->check_AES_REPLY(dev_ident.HMKEY, rcv_msg.buf);									// check the data, if ok, the last message will be restored, otherwise the hasdata flag will be 0
+		aes.check_AES_REPLY(dev_ident.HMKEY, rcv_msg.buf);									// check the data, if ok, the last message will be restored, otherwise the hasdata flag will be 0
 		return;																				// next round to work on the restored message
 
 
@@ -326,17 +325,17 @@ void AS::process_message(void) {
 		pCM = cmm[0];
 
 		/* challange the message */
-		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes->active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
+		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes.active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
 			send_AES_REQ();																	// send a request
 			return;																			// nothing to do any more, wait and see
 		}
 
 		/* check the message in the aes_key struct, returns are 0 for doesnt fit, 1 key exchange started, 2 new key received */
-		uint8_t new_key = aes->check_SEND_AES_TO_ACTOR(dev_ident.HMKEY, dev_ident.HMKEY_INDEX, rcv_msg.buf);
+		uint8_t new_key = aes.check_SEND_AES_TO_ACTOR(dev_ident.HMKEY, dev_ident.HMKEY_INDEX, rcv_msg.buf);
 		if (new_key) {
-			//dbg << "new idx " << aes->new_hmkey_index[0] << ", new key " << _HEX(aes->new_hmkey, 16) << '\n';
-			memcpy(dev_ident.HMKEY, aes->new_hmkey, 16);										// store the new key
-			dev_ident.HMKEY_INDEX[0] = aes->new_hmkey_index[0];
+			dbg << "new idx " << aes.new_hmkey_index[0] << ", new key " << _HEX(aes.new_hmkey, 16) << '\n';
+			memcpy(dev_ident.HMKEY, aes.new_hmkey, 16);									// store the new key
+			dev_ident.HMKEY_INDEX[0] = aes.new_hmkey_index[0];
 			set_eeprom(0, sizeof(dev_ident), ((uint8_t*)&dev_ident));						// write it to the eeprom
 		}
 		send_ACK();																			// send ACK
@@ -353,7 +352,7 @@ void AS::process_message(void) {
 		else pCM = cmm[rcv_by11];															// short hand to respective channel module instance
 
 		/* check if we need to challange the request */
-		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes->active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
+		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes.active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
 			send_AES_REQ();																	// send a request
 			return;																			// nothing to do any more, wait and see
 		}
@@ -372,7 +371,7 @@ void AS::process_message(void) {
 
 		snd_msg.mBody.FLAG.WKMEUP= 0;
 		send_ACK();
-		pom->stayAwake(500);
+		pom.stayAwake(500);
 
 	} else if (rcv_by03 == BY03(MSG_TYPE::SWITCH)) {
 		/* to process this message we need to get check if the peer in the payload exist and 
@@ -385,7 +384,7 @@ void AS::process_message(void) {
 		pCM = cmm[rcv_msg.cnl];																// short hand to the respective channel module
 
 		/* check if we need to challange the request */
-		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes->active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
+		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes.active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
 			send_AES_REQ();																	// send a request
 			return;																			// nothing to do any more, wait and see
 		}
@@ -400,7 +399,7 @@ void AS::process_message(void) {
 		pCM = cmm[rcv_msg.cnl];																// we remembered on the channel by checking validity of peer
 
 		/* check if we need to challange the request */
-		if ((*pCM->lstC.ptr_to_val(0x08)) && (aes->active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
+		if ((*cmm[rcv_msg.cnl]->lstC.ptr_to_val(0x08)) && (aes.active != MSG_AES::AES_REPLY_OK)) {		// check if we need AES confirmation
 			send_AES_REQ();																	// send a request
 			return;																			// nothing to do any more, wait and see
 		}
@@ -461,8 +460,8 @@ void AS::snd_poll(void) {
 	/* can only happen while an ack was received and AS:processMessage had send the retr_cnt to 0xff */
 	if (sm->retr_cnt == 0xff) {
 		sm->clear();																		// nothing to do any more
-		led->set(LED_STAT::GOT_ACK);														// fire the status led
-		//pom->stayAwake(100);																// and stay awake for a short while
+		led.set(LED_STAT::GOT_ACK);														// fire the status led
+		//pom.stayAwake(100);																// and stay awake for a short while
 		return;
 	}
 
@@ -542,13 +541,13 @@ void AS::snd_poll(void) {
 	/* check the retr count if there is something to send, while message timer was checked earlier */
 	if (sm->retr_cnt < sm->temp_max_retr) {													// not all sends done and timing is OK
 		uint8_t tBurst = sm->mBody.FLAG.BURST;												// get burst flag, while string will get encoded
-		com->snd_data(sm->buf, tBurst);														// send to communication module
+		com.snd_data(sm->buf, tBurst);														// send to communication module
 		sm->retr_cnt++;																		// remember that we had send the message
 
 		if (sm->mBody.FLAG.BIDI) sm->timer.set(sm->max_time);								// timeout is only needed while an ACK is requested
 		if (*cmm[0]->list[0]->ptr_to_val(REG_CHN0_LED_MODE) & 0x40)							// LED on ?
-			led->set(LED_STAT::SEND_MSG);													// fire the status led
-		pom->stayAwake(500);																// and stay awake for a short while (HAVE_DATA may follow)
+			led.set(LED_STAT::SEND_MSG);													// fire the status led
+		pom.stayAwake(500);																// and stay awake for a short while (HAVE_DATA may follow)
 
 		DBG_SN(F("<- "), _HEX(sm->buf, sm->buf[0] + 1), ' ', _TIME, '\n');					// some debug
 
@@ -560,8 +559,8 @@ void AS::snd_poll(void) {
 		if (!sm->mBody.FLAG.BIDI) return;													// everything fine, ACK was not required
 
 		sm->timeout = 1;																	// set the time out only while an ACK or answer was requested
-		led->set(LED_STAT::GOT_NACK);														// fire the status led
-		//pom->stayAwake(100);																// and stay awake for a short while
+		led.set(LED_STAT::GOT_NACK);														// fire the status led
+		//pom.stayAwake(100);																// and stay awake for a short while
 
 		DBG_SN(F("  timed out "), _TIME, '\n');											// some debug
 	}
@@ -732,7 +731,7 @@ void AS::send_DEVICE_INFO(MSG_REASON::E reason) {
 
 																							//pair_mode.active = 1;																	// set pairing flag
 																							//pair_mode.timer.set(20000);															// set pairing time
-																							//led->set(LED_STAT::PAIR_WAIT);															// and visualize the status
+																							//led.set(LED_STAT::PAIR_WAIT);															// and visualize the status
 }
 /**
 * @brief Check if ACK required and send ACK or NACK
@@ -751,13 +750,13 @@ void AS::check_send_ACK_NACK(uint8_t ackOk) {
 void AS::send_ACK(void) {
 	if (!rcv_msg.mBody.FLAG.BIDI) return;													// send ack only if required
 
-	if (aes->active == MSG_AES::AES_REPLY_OK) {												// if last message was a valid aes reply we have to answer with an ack_auth
+	if (aes.active == MSG_AES::AES_REPLY_OK) {												// if last message was a valid aes reply we have to answer with an ack_auth
 		snd_msg.type = MSG_TYPE::ACK_AUTH;													// length and flags are set within the snd_msg struct
-		memcpy(snd_msg.buf + 11, aes->ACK_payload, 4);										// 4 byte auth payload
+		memcpy(snd_msg.buf + 11, aes.ACK_payload, 4);										// 4 byte auth payload
 	} else {
 		snd_msg.type = MSG_TYPE::ACK;														// length and flags are set within the snd_msg struct
 	}
-	aes->active = MSG_AES::NONE;															// no need to remember on the last message
+	aes.active = MSG_AES::NONE;														// no need to remember on the last message
 	snd_msg.active = MSG_ACTIVE::ANSWER;													// for address, counter and to make it active
 }
 /**
@@ -793,9 +792,9 @@ void AS::send_ACK_STATUS(uint8_t chnl, uint8_t stat, uint8_t flag, uint8_t sum) 
 	snd_msg.buf[11] = chnl;																	// add the channel
 	snd_msg.buf[12] = stat;																	// and the status/value
 	snd_msg.buf[13] = flag;																	// flags are prepared in the status poll function
-	if (bat->get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
+	if (bat.get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
 	else snd_msg.buf[13] &= 0x7F;
-	snd_msg.buf[14] = com->rssi;															// add rssi information
+	snd_msg.buf[14] = com.rssi;															// add rssi information
 	snd_msg.buf[15] = sum;																	// we can add it to the buffer in any case, while length byte is set below
 
 	snd_msg.active = MSG_ACTIVE::ANSWER;													// for address, counter and to make it active
@@ -807,7 +806,7 @@ void AS::send_ACK2(void) {
 }
 void AS::send_AES_REQ() {
 	/* save the initial message for later use and prepare the temp key */
-	aes->prep_AES_REQ(dev_ident.HMKEY, rcv_msg.buf, snd_msg.buf);							// prepare the message, store received string and so on
+	aes.prep_AES_REQ(dev_ident.HMKEY, rcv_msg.buf, snd_msg.buf);							// prepare the message, store received string and so on
 	rcv_msg.buf[0] = 0;																		// and terminate the further processing
 
 	/* create the message */
@@ -964,9 +963,9 @@ void AS::send_INFO_ACTUATOR_STATUS(uint8_t chnl, uint8_t stat, uint8_t flag, uin
 	snd_msg.buf[11] = chnl;																	// add the channel
 	snd_msg.buf[12] = stat;																	// and the status/value
 	snd_msg.buf[13] = flag;																	// flags are prepared in the status poll function
-	if (bat->get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
+	if (bat.get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
 	else snd_msg.buf[13] &= 0x7F;
-	snd_msg.buf[14] = com->rssi;															// add rssi information
+	snd_msg.buf[14] = com.rssi;															// add rssi information
 	snd_msg.buf[15] = sum;																	// we can add it to the buffer in any case, while length byte is set below
 
 	snd_msg.active = MSG_ACTIVE::PAIR;														// for address, counter and to make it active
@@ -1025,7 +1024,7 @@ void AS::send_POWER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_
 }
 void AS::send_WEATHER_EVENT(uint8_t bidi, CM_MASTER *channel_module, uint8_t *ptr_payload) {
 	memcpy(snd_msg.buf + 10, ptr_payload, MLEN(MSG_TYPE::WEATHER_EVENT)-9);					// payload starts at byte 10 and has a length of 16 byte
-	snd_msg.buf[10] |= bat->get_status() ? 0x80 : 0x00;
+	snd_msg.buf[10] |= bat.get_status() ? 0x80 : 0x00;
 
 	snd_msg.active = MSG_ACTIVE::BROADCAST;													// for address, counter and to make it active
 	snd_msg.type = MSG_TYPE::WEATHER_EVENT;													// length and flags are set within the snd_msg struct

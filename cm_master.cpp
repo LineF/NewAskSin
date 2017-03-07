@@ -344,9 +344,9 @@ void process_send_status_poll(s_cm_status *cm, uint8_t cnl) {
 	snd_msg.buf[11] = cnl;																	// add the channel
 	snd_msg.buf[12] = cm->value;															// and the status/value
 	snd_msg.buf[13] = cm->flag;																// flags are prepared in the status poll function
-	if (bat->get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
+	if (bat.get_status()) snd_msg.buf[13] |= 0x80;											// highest bit is battery flag
 	else snd_msg.buf[13] &= 0x7F;
-	snd_msg.buf[14] = com->rssi;															// add rssi information
+	snd_msg.buf[14] = com.rssi;															// add rssi information
 	snd_msg.buf[15] = *cm->sum_value;														// we can add it to the buffer in any case, while length byte is set below
 	snd_msg.temp_max_retr = cm->msg_retr;													// how often to resend a message
 
