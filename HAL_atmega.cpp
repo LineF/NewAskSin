@@ -271,8 +271,8 @@ ISR(TIMER2_COMPA_vect) {
 		if (timer == 2) ++milliseconds;
 		//setPinCng(LED_RED_PORT, LED_RED_PIN);													// for generating a 1 KHz signal on LED pin to calibrate CPU
 	#endif
-	if (ledFreqTest)
-		set_pin_toggle(led->pin_red);
+	//if (ledFreqTest)
+	//	set_pin_toggle(led->pin_red);
 }
 //- -----------------------------------------------------------------------------------------------------------------------
 
@@ -302,7 +302,7 @@ uint16_t get_external_voltage(uint8_t pin_enable, uint8_t pin_measure, uint8_t z
 	set_pin_low(pin_measure);																// switch off pull-up resistor to get correct measurement
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
-	values[v_idx++] = get_adc_value(admux_external | ptr_measure->PINBIT);					// get the adc value on base of the predefined adc register setup
+	values[v_idx++] = get_adc_value(admux_external | digitalPinToBitMask(pin_measure));		// get the adc value on base of the predefined adc register setup
 	//DBG(SER, F("bat:curr:"), values[v_idx-1]);
 	if (v_idx >= BAT_OVERSAMPLING) v_idx = 0;
 

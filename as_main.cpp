@@ -348,7 +348,7 @@ void AS::process_message(void) {
 		else if (*rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_ENTER_BOOTLOADER2))  INSTRUCTION_ENTER_BOOTLOADER2(&rcv_msg.m11caxx);
 
 		/* everything below is channel related */
-		else pCM->instruction_msg(*rcv_by10, rcv_msg.buf);
+		else pCM->instruction_msg((MSG_TYPE::E)(*rcv_by10), rcv_msg.buf);
 		//else if (*rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_OFF))        pCM->INSTRUCTION_INHIBIT_OFF(&rcv_msg.m1100xx);
 		//else if (*rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_INHIBIT_ON))         pCM->INSTRUCTION_INHIBIT_ON(&rcv_msg.m1101xx);
 		//else if (*rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_SET))                pCM->INSTRUCTION_SET(&rcv_msg.m1102xx);
@@ -407,7 +407,7 @@ void AS::process_message(void) {
 //		else if (*rcv_by03 == BY03(MSG_TYPE::POWER_EVENT_CYCLE)) pCM->POWER_EVENT_CYCLE(&rcv_msg.m5exxxx);
 //		else if (*rcv_by03 == BY03(MSG_TYPE::POWER_EVENT))       pCM->POWER_EVENT(&rcv_msg.m5fxxxx);
 //		else if (*rcv_by03 == BY03(MSG_TYPE::WEATHER_EVENT))     pCM->WEATHER_EVENT(&rcv_msg.m70xxxx);
-		pCM->peer_action_msg(*rcv_by03, rcv_msg.buf);
+		pCM->peer_action_msg((MSG_TYPE::E)(*rcv_by03), rcv_msg.buf);
 
 
 	} else {

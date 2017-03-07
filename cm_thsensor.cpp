@@ -91,7 +91,7 @@ void cm_thsensor::cm_poll(void) {
 	//DBG(TH, F("TH: lstC.val(l1): "), _HEX((uint8_t*)&l1, 2), F(", lstP.val(l4): "), _HEX((uint8_t*)&l4, 2), '\n');
 	//DBG(TH, F("TH: lstC.val: "), _HEX((uint8_t*)&lstC.val, 2), F(", lstP.val: "), _HEX((uint8_t*)&lstP.val, 2), '\n');
 	
-	hm->send_WEATHER_EVENT(0, this, (uint8_t *)&sensVal);									// prepare the message and send, burst if burstRx register is set
+	hm.send_WEATHER_EVENT(0, this, (uint8_t *)&sensVal);									// prepare the message and send, burst if burstRx register is set
 }
 
 uint32_t cm_thsensor::calcSendSlot(void) {
