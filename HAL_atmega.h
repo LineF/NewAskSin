@@ -64,6 +64,7 @@ void set_pin_input(uint8_t pin_def);														// set the pin as input
 
 void set_pin_high(uint8_t pin_def);															// set high level on specific pin
 void set_pin_low(uint8_t pin_def);															// set a low level on a specific pin
+void set_pin_toggle(uint8_t pin_def);														// toggle specific pin
 uint8_t get_pin_status(uint8_t pin_def);													// detect a pin input if it is high or low
 //- -----------------------------------------------------------------------------------------------------------------------
 
