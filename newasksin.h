@@ -98,7 +98,7 @@ extern const uint8_t HMSerialData[] PROGMEM;
 */
 extern const uint8_t dev_static[] PROGMEM;
 
-extern AS *hm;
+extern AS hm;
 extern AES *aes;
 extern COM *com;
 extern CBN *cbn;

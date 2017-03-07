@@ -5,7 +5,7 @@
 //- load library's --------------------------------------------------------------------------------------------------------
 #include <newasksin.h>																		// ask sin framework
 #include "register.h"																		// configuration sheet
-#include "waittimer.h"
+
 
 //- arduino functions -----------------------------------------------------------------------------------------------------
 void setup() {
@@ -19,19 +19,20 @@ void setup() {
 	//PORTB = PORTC = PORTD = 0x00;															// pullup's off
 
 	DBG_START(SER, F("HM_PB_6_WM55\n"));
-	DBG(SER, F(LIB_VERSION_STRING));
+	DBG(SER, freeRam(), ' ', F(LIB_VERSION_STRING));
 
 	// - AskSin related ---------------------------------------
 	init_millis_timer0();																	// init timer0
-	hm->init();																				// init the asksin framework
+	hm.init();																				// init the asksin framework
 
 	sei();																					// enable interrupts
+
 }
 
 void loop() {
 	// - AskSin related ---------------------------------------
-	hm->poll();																				// poll the homematic main loop
-	
+	hm.poll();																				// poll the homematic main loop
+
 	// - user related -----------------------------------------
 	
 }
@@ -41,8 +42,9 @@ void loop() {
 void CM_DIMMER::init_dimmer(uint8_t virtual_group, uint8_t virtual_channel, uint8_t channel) {
 // setting the relay pin as output, could be done also by pinMode(3, OUTPUT)
 	//DBG(SER, F("initDim- vrt_grp: "), *virtual_group, F(", vrt_cnl: "), *virtual_channel, F(", cnl: "), *channel, '\n');
-	
-	set_pin_output(&pin_D3);																// init the dimmer pin
+
+	set_pin_output(pinD3);																	// init the dimmer pin
+
 	power_timer2_enable();																	// enable the timer2 in power management
 
 	TCCR2A = _BV(COM2B1) | _BV(WGM20);

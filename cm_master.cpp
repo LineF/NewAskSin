@@ -22,22 +22,28 @@ CM_MASTER::CM_MASTER(const uint8_t peer_max) {
 }
 
 
+void CM_MASTER::init(void) {
+	cm_init();																				// init the virtual poll function
+}
+void CM_MASTER::poll(void) {
+	cm_poll();																				// poll the virtual poll function 
+}
+
 
 /**
 * @brief Virtual function is called while we received a new list0 or list1
 * Herewith we can adapt changes given by the config change. Needs to be overwritten
 * by the respective channel module
 */
+
+void CM_MASTER::cm_init(void) {
+}
+
+void CM_MASTER::cm_poll(void) {
+}
+
 void CM_MASTER::info_config_change(uint8_t channel) {
 	DBG(CM, F("CM:config_change "), channel, '\n' );
-}
-/**
-* we received an peer add event, which means, there was a peer added in this respective channel
-* 1st 3 bytes shows the peer address, 4th and 5th byte gives the peer channel
-* no need for sending an answer here, for information only
-*/
-void CM_MASTER::info_peer_add(s_m01xx01 *buf) {
-	DBG(CM, F("CM:info_peer_add, peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
 }
 
 /**
@@ -50,30 +56,27 @@ void CM_MASTER::info_peer_remove(s_m01xx02 *buf) {
 }
 
 void CM_MASTER::request_peer_defaults(uint8_t idx, s_m01xx01 *buf) {
+	lstP.load_default();																	// copy the defaults from progmem into the peer list, index doesn't matter
+	lstP.save_list(idx);																	// and save the list, index is important while more choices in the peer table
 	DBG(CM, F("CM:request_peer_defaults, idx:"), _HEX(idx), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n' );
 }
 
+void CM_MASTER::instruction_msg(MSG_TYPE::E type, uint8_t *buf) {										// consolidation of ~10 virtual function definitions
 
-void CM_MASTER::init(void) {
-	cm_init();																				// init the virtual poll function
-}
-
-void CM_MASTER::cm_init(void) {
 }
 
-void CM_MASTER::poll(void) {
-	cm_poll();																				// poll the virtual poll function 
+void CM_MASTER::peer_action_msg(MSG_TYPE::E type, uint8_t *buf) {										// consolidation of ~10 virtual function definitions
+
 }
-void CM_MASTER::cm_poll(void) {
-}
+
 
 /*
 * @brief This function is called at the moment by the config button class, it is to toogle the output
 * of an alligned channel. Needs to be overwritten by any actor class 
 */
-void CM_MASTER::set_toggle(void) {
-	DBG(CM, F("CM:toggle\n") );
-}
+//void CM_MASTER::set_toggle(void) {
+//	DBG(CM, F("CM:toggle\n") );
+//}
 
 
 /*
@@ -84,7 +87,7 @@ void CM_MASTER::set_toggle(void) {
 * CONFIG_PEER_ADD message is send by the HM master to combine two client devices
 * request is forwarded by the AS:processMessage function
 */
-void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
+/*void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
 	uint8_t temp_peer[4];																	// temp byte array to load peer addresses
 	uint8_t ret_byte = 0;																	// prepare a placeholder for success reporting
 
@@ -99,18 +102,15 @@ void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
 
 		if (idx != 0xff) {																	// free slot available
 			peerDB.set_peer(idx, temp_peer);												// write the peer into the database
-
-			lstP.load_default();															// copy the defaults from progmem into the peer list, index doesn't matter
 			request_peer_defaults(idx, buf);												// ask the channel module to load the defaults
-			lstP.save_list(idx);															// and save the list, index is important while more choices in the peer table
 			ret_byte++;																		// increase success
 		}
 	}
 	info_peer_add(buf);																		// inform the user module of the added peer
 
 	DBG(CM, F("CM:CONFIG_PEER_ADD, cnl:"), buf->MSG_CNL, F(", peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), F(", RET:"), ret_byte, '\n');
-	hm->check_send_ACK_NACK(ret_byte);
-}
+	hm.check_send_ACK_NACK(ret_byte);
+}*/
 /*
 * @brief Removes one or two peers from a channel
 * CONFIG_PEER_REMOVE message is send by the HM master to remove the binding of two client devices
@@ -134,7 +134,7 @@ void CM_MASTER::CONFIG_PEER_REMOVE(s_m01xx02 *buf) {
 	}
 	info_peer_remove(buf);																	// inform the user module of the removed peer
 	DBG(CM, F("CM:CONFIG_PEER_REMOVE, cnl:"), buf->MSG_CNL, F(", peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
-	hm->check_send_ACK_NACK(ret_byte);
+	hm.check_send_ACK_NACK(ret_byte);
 }
 /*
 * @brief Requests a listing of all registered peers from a specific channel
@@ -174,7 +174,7 @@ void CM_MASTER::CONFIG_PARAM_REQ(s_m01xx04 *buf) {
 	uint8_t idx = peerDB.get_idx(buf->PEER_ID);												// get the requested peer index, PEER_ID is only 3 byte, but the following byte gives the channel
 	if (idx == 0xff) {																		// nothing to do while index not found
 		DBG(CM, F(", address unavailable\n"));
-		hm->send_NACK_TARGET_INVALID();
+		hm.send_NACK_TARGET_INVALID();
 		return;
 	}
 
@@ -202,10 +202,10 @@ void CM_MASTER::CONFIG_START(s_m01xx05 *buf) {
 	if ((cm->list) && (cm->idx_peer != 0xff)) {												// list and peer index found
 		cm->timer.set(5000);																// set timeout time, otherwise the channel will be open for write forever
 		cm->active = 1;																		// set active
-		hm->send_ACK();																		// send back that everything is ok
+		hm.send_ACK();																		// send back that everything is ok
 		// TODO: set message id flag to config in send module
 	} else {
-		hm->send_NACK();																	// something wrong
+		hm.send_NACK();																	// something wrong
 	}
 	DBG(CM, F("CM:CONFIG_START, cnl:"), buf->MSG_CNL, '/', cm->list->cnl, F(", lst:"), buf->PARAM_LIST, '/', cm->list->lst, F(", peer:"), _HEX(buf->PEER_ID, 4), F(", idx:"), cm->idx_peer, '\n');
 }
@@ -222,14 +222,13 @@ void CM_MASTER::CONFIG_END(s_m01xx06 *buf) {
 	cm->active = 0;																			// clear the flag
 
 	snd_msg.mBody.FLAG.WKMEUP= 1;
-	hm->send_ACK();																			// send back that everything is ok
+	hm.send_ACK();																			// send back that everything is ok
 
 	if (cm->list->lst < 2) {
 		lstC.load_list(cm->idx_peer);														// reload list0 or 1
 		inform_config_change(lstC.cnl);														// inform the channel module on a change of list0 or 1
 	}
 	// TODO: remove message id flag to config in send module
-	pair_mode.timer.set(0);																	// timeout pairing timer
 	DBG(CM, F("CM:CONFIG_END, cnl:"), buf->MSG_CNL, '\n');
 }
 /* 
@@ -251,9 +250,9 @@ void CM_MASTER::CONFIG_WRITE_INDEX2(s_m01xx08 *buf) {
 
 	if (cm->active)  {																		// check if config is active, channel fit is checked in AS
 		cm->list->write_array(buf->DATA, buf->MSG_LEN - 11, cm->idx_peer);					// write the array into the list
-		hm->send_ACK();																		// we are fine
+		hm.send_ACK();																		// we are fine
 		DBG(CM, F("CM:CONFIG_WRITE_INDEX2, cnl:"), buf->MSG_CNL, F(", lst:"), cm->list->lst, F(", idx:"), cm->idx_peer, '\n');
-	} else hm->send_NACK();
+	} else hm.send_NACK();
 }
 /*
 * @brief Process message CONFIG_SERIAL_REQ.
@@ -263,7 +262,7 @@ void CM_MASTER::CONFIG_WRITE_INDEX2(s_m01xx08 *buf) {
 * 0B 77 A0 01 63 19 63 01 02 04 00 09
 */
 void CM_MASTER::CONFIG_SERIAL_REQ(s_m01xx09 *buf) {
-	hm->send_INFO_SERIAL();
+	hm.send_INFO_SERIAL();
 	DBG(CM, F("CM:CONFIG_SERIAL_REQ\n"));
 }
 /*
@@ -277,7 +276,7 @@ void CM_MASTER::CONFIG_PAIR_SERIAL(s_m01xx0a *buf) {
 	DBG(CM, F("CM:CONFIG_PAIR_SERIAL, cnl:"), _HEX(buf->SERIALNO,10), '\n');
 
 	if (isEqual(buf->SERIALNO, dev_ident.SERIAL_NR, 10)) 									// compare serial and send device info
-		hm->send_DEVICE_INFO(MSG_REASON::ANSWER);
+		hm.send_DEVICE_INFO(MSG_REASON::ANSWER);
 }
 /*
 * @brief Process message CONFIG_STATUS_REQUEST
@@ -312,7 +311,7 @@ void CM_MASTER::ACK_NACK_UNKNOWN(s_m02xxxx *buf) {
 }
 
 
-void CM_MASTER::INSTRUCTION_INHIBIT_OFF(s_m1100xx *buf) {
+/*void CM_MASTER::INSTRUCTION_INHIBIT_OFF(s_m1100xx *buf) {
 	DBG(CM, F("CM:INSTRUCTION_INHIBIT_OFF\n"));
 }
 void CM_MASTER::INSTRUCTION_INHIBIT_ON(s_m1101xx *buf) {
@@ -348,7 +347,7 @@ void CM_MASTER::INSTRUCTION_SET_TEMP(s_m1186xx *buf) {
 //void CM_MASTER::INSTRUCTION_ADAPTION_DRIVE_SET(s_m1187xx *buf) {
 //}
 //void CM_MASTER::INSTRUCTION_ENTER_BOOTLOADER2(s_m11caxx *buf) {
-//}
+//}*/
 
 
 void CM_MASTER::HAVE_DATA(s_m12xxxx *buf) {
@@ -356,7 +355,7 @@ void CM_MASTER::HAVE_DATA(s_m12xxxx *buf) {
 }
 
 
-void CM_MASTER::SWITCH(s_m3Exxxx *buf) {
+/*void CM_MASTER::SWITCH(s_m3Exxxx *buf) {
 	DBG(CM, F("CM:SWITCH\n"));
 }
 void CM_MASTER::TIMESTAMP(s_m3fxxxx *buf) {
@@ -394,7 +393,7 @@ void CM_MASTER::POWER_EVENT(s_m5fxxxx *buf) {
 }
 void CM_MASTER::WEATHER_EVENT(s_m70xxxx *buf) {
 	DBG(CM, F("CM:WEATHER_EVENT\n"));
-}
+}*/
 
 
 /*

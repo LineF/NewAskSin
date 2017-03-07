@@ -51,12 +51,11 @@
 * only on the functions defined in HAL_<type>_<model>.
 */
 /*
-extern void set_pin_output(const s_pin_def *ptr_pin);
-extern void set_pin_input(const s_pin_def *ptr_pin);
-extern void set_pin_high(const s_pin_def *ptr_pin);
-extern void set_pin_low(const s_pin_def *ptr_pin);
-extern void set_pin_toogle(const s_pin_def *ptr_pin);
-extern uint8_t get_pin_status(const s_pin_def *ptr_pin);
+extern void set_pin_output(uint8_t pin_def);
+extern void set_pin_input(uint8_t pin_def);
+extern void set_pin_high(uint8_t pin_def);
+extern void set_pin_low(uint8_t pin_def);
+extern uint8_t get_pin_status(uint8_t pin_def);
 */
 //- -----------------------------------------------------------------------------------------------------------------------
 
@@ -67,8 +66,8 @@ extern uint8_t get_pin_status(const s_pin_def *ptr_pin);
 * you can also use the arduino standard timer for a specific hardware by interlinking the function call to getmillis()
 */
 /*
-extern void register_PCINT(const s_pin_def *ptr_pin);
-extern uint8_t check_PCINT(const s_pin_def *ptr_pin);
+extern void register_PCINT(uint8_t pin_def);
+extern uint8_t check_PCINT(uint8_t pin_def);
 extern void(*pci_ptr)(uint8_t vec, uint8_t pin, uint8_t flag);
 extern void maintain_PCINT(uint8_t vec);
 */
@@ -121,9 +120,8 @@ extern void add_millis(uint32_t ms);
 */
 /*
 extern uint16_t get_internal_voltage(void);
-extern void init_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure);
-extern uint16_t get_external_voltage(const s_pin_def *ptr_enable, const s_pin_def *ptr_measure, uint8_t z1, uint8_t z2);
-*/
+extern void init_external_voltage(uint8_t pin_enable, uint8_t pin_measure);
+extern uint16_t get_external_voltage(const uint8_t pin_enable, uint8_t pin_measure, uint8_t z1, uint8_t z2);
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
@@ -141,6 +139,7 @@ extern void stopWDG();
 extern void setSleepMode();
 //- -----------------------------------------------------------------------------------------------------------------------
 
+extern uint16_t freeRam();
 
 
 
@@ -213,53 +212,6 @@ void get_random(uint8_t *buf, uint32_t x = get_millis());
 #endif
 //- -----------------------------------------------------------------------------------------------------------------------
 
-	//- timer functions -------------------------------------------------------------------------------------------------------
-	// https://github.com/zkemble/millis/blob/master/millis/
-/*
-	#ifdef TIMER2_LOW_FREQ_OSC
-		#define REG_TCCRA		TCCR2A
-		#define REG_TCCRB		TCCR2B
-		#define REG_TIMSK		TIMSK2
-		#define REG_OCR			OCR2A
-		#define BIT_OCIE		OCIE2A
-		#define BIT_WGM			WGM21
-		#define PRESC_32		(_BV(CS21)|_BV(CS20))
-		#define PRESC_1024		(_BV(CS22)|_BV(CS21)|_BV(CS20))
-		#define CLOCKSEL        PRESC_32
-		#define ISR_VECT		TIMER2_COMPA_vect
-		#define FREQ_CORR_FACT	234375L
-		#define FREQ_MAX_CORR	10000000L
-	#else
-		#define REG_TCCRA		TCCR0A
-		#define REG_TCCRB		TCCR0B
-		#define REG_TIMSK		TIMSK0
-		#define REG_OCR			OCR0A
-		#define BIT_OCIE		OCIE0A
-		#define BIT_WGM			WGM01
-		#define CLOCKSEL        (_BV(CS01)|_BV(CS00))
-		#define PRESCALER       64
-		#define ISR_VECT		TIMER0_COMPA_vect
-	#endif
-*/
-
-
-//static uint16_t wdtSleep_TIME;
-
-
-
-
-
-	//- needed for 32u4 to prevent sleep, while USB didn't work in sleep ------------------------------------------------------
-//	extern void    initWakeupPin(void);															// init the wakeup pin
-//	extern uint8_t checkWakeupPin(void);														// we can setup a pin which avoid sleep mode
-	//- -----------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
 
 	//- power management functions --------------------------------------------------------------------------------------------
 	extern void    startTimer1ms(void);
@@ -280,17 +232,6 @@ void get_random(uint8_t *buf, uint32_t x = get_millis());
 	#endif
 	//- -----------------------------------------------------------------------------------------------------------------------
 
-
-	//- battery measurement functions -----------------------------------------------------------------------------------------
-	// http://jeelabs.org/2013/05/17/zero-powe-battery-measurement/
-//	#define BAT_NUM_MESS_ADC                  20								// real measures to get the best average measure
-//	#define BAT_DUMMY_NUM_MESS_ADC            40								// dummy measures to get the ADC working
-
-//	extern uint16_t getAdcValue(uint8_t adcmux);
-//	uint16_t  getBatteryVoltage(void);
-	//- -----------------------------------------------------------------------------------------------------------------------
-
-
 	//- system functions -------------------------------------------------------------------------------------------------
 	extern uint8_t getDefaultOSCCAL(void);
 	//- -----------------------------------------------------------------------------------------------------------------------
@@ -298,13 +239,6 @@ void get_random(uint8_t *buf, uint32_t x = get_millis());
 
 	//- main module functions -------------------------------------------------------------------------------------------------
 	extern void cnl0Change(void);
-	//- -----------------------------------------------------------------------------------------------------------------------
-
-	//- randum number functions -----------------------------------------------------------------------------------------------
-	//static uint16_t random_seed;
-	//void init_random(void);
-	//void get_random(uint8_t *buf);
-	//inline void seed_random(void);
 	//- -----------------------------------------------------------------------------------------------------------------------
 
 

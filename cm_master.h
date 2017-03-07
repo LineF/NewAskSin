@@ -53,23 +53,27 @@ public://-----------------------------------------------------------------------
 	* @brief Keep all information for sending an ACK_STATUS or INFO_ACTUATOR_STATUS at one place
 	*/
 
+	void init(void);																		// init function, called after AS initialisation
+	void poll(void);																		// poll function, driven by HM loop
+
+
+	virtual void cm_init(void);																// init function for channel modules to overwrite
+	virtual void cm_poll(void);																// poll function for channel modules to overwrite
+
 	virtual void info_config_change(uint8_t channel);										// list1 on registered channel had changed
-	virtual void info_peer_add(s_m01xx01 *buf);												// peer was added to the specific channel, 1st 3 bytes shows peer address, 4th and 5th the peer channel
 	virtual void info_peer_remove(s_m01xx02 *buf);											// peer was removed from the specific channel, 1st 3 bytes shows peer address, 4th and 5th the peer channel
 	virtual void request_peer_defaults(uint8_t idx, s_m01xx01 *buf);						// add peer channel defaults to list3/4
 
-	void init(void);																		// init function, called after AS initialisation
-	virtual void cm_init(void);																// init function for channel modules to overwrite
-
-	
 	/* virtual declaration for cmRemote channel module. make pin configuration and button event accessible */
 	virtual void cm_init_pin(uint8_t PINBIT, volatile uint8_t *DDREG, volatile uint8_t *PORTREG, volatile uint8_t *PINREG, uint8_t PCINR, uint8_t PCIBYTE, volatile uint8_t *PCICREG, volatile uint8_t *PCIMASK, uint8_t PCIEREG, uint8_t VEC) {}
 	virtual void button_action(uint8_t event) {}
 
-	void poll(void);																		// poll function, driven by HM loop
-	virtual void cm_poll(void);																// poll function for channel modules to overwrite
+	virtual void instruction_msg(MSG_TYPE::E type, uint8_t *buf);							// consolidation of ~10 virtual function definitions
+	virtual void peer_action_msg(MSG_TYPE::E type, uint8_t *buf);							// consolidation of ~10 virtual function definitions
 
-	virtual void set_toggle(void);															// toggle the module initiated by config button
+
+
+	//virtual void set_toggle(void);															// toggle the module initiated by config button
 
 	/* receive functions to handle requests forwarded by AS:processMessage 
 	*  only channel module related requests are forwarded, majority of requests are handled within main AS class */
@@ -82,7 +86,7 @@ public://-----------------------------------------------------------------------
 
 	//void DEVICE_INFO(s_m00xxxx *buf);														// in client comms not needed as receive function
 
-	void CONFIG_PEER_ADD(s_m01xx01 *buf);													// mainly all needed to set or get information
+	//void CONFIG_PEER_ADD(s_m01xx01 *buf);													// mainly all needed to set or get information
 	void CONFIG_PEER_REMOVE(s_m01xx02 *buf);												// for the defined device. all requests are
 	void CONFIG_PEER_LIST_REQ(s_m01xx03 *buf);												// handled within the cmMaster class
 	void CONFIG_PARAM_REQ(s_m01xx04 *buf);
@@ -115,35 +119,41 @@ public://-----------------------------------------------------------------------
 	//void INFO_ACTUATOR_STATUS(s_m1006xx *buf);
 	//void INFO_TEMP(s_m100axx *buf);
 
-	virtual void INSTRUCTION_INHIBIT_OFF(s_m1100xx *buf);
-	virtual void INSTRUCTION_INHIBIT_ON(s_m1101xx *buf);
-	virtual void INSTRUCTION_SET(s_m1102xx *buf);
-	virtual void INSTRUCTION_STOP_CHANGE(s_m1103xx *buf);
+
+	/* consolidation to one virtual function as virtual functions take 6 byte each */
+
+	//virtual void INSTRUCTION_INHIBIT_OFF(s_m1100xx *buf);
+	//virtual void INSTRUCTION_INHIBIT_ON(s_m1101xx *buf);
+	//virtual void INSTRUCTION_SET(s_m1102xx *buf);
+	//virtual void INSTRUCTION_STOP_CHANGE(s_m1103xx *buf);
 	//void INSTRUCTION_RESET(s_m1104xx *buf);												// handled in AS
-	virtual void INSTRUCTION_LED(s_m1180xx *buf);	
-	virtual void INSTRUCTION_LED_ALL(s_m1181xx *buf);
-	virtual void INSTRUCTION_LEVEL(s_m1181xx *buf);	
-	virtual void INSTRUCTION_SLEEPMODE(s_m1182xx *buf);
+	//virtual void INSTRUCTION_LED(s_m1180xx *buf);	
+	//virtual void INSTRUCTION_LED_ALL(s_m1181xx *buf);
+	//virtual void INSTRUCTION_LEVEL(s_m1181xx *buf);	
+	//virtual void INSTRUCTION_SLEEPMODE(s_m1182xx *buf);
 	//void INSTRUCTION_ENTER_BOOTLOADER(s_m1183xx *buf);									// handled in AS
-	virtual void INSTRUCTION_SET_TEMP(s_m1186xx *buf);										// to be evaluated
+	//virtual void INSTRUCTION_SET_TEMP(s_m1186xx *buf);										// to be evaluated
 	//void INSTRUCTION_ADAPTION_DRIVE_SET(s_m1187xx *buf);									// handled in AS
 	//void INSTRUCTION_ENTER_BOOTLOADER2(s_m11caxx *buf);									// handled in AS
 
 	void HAVE_DATA(s_m12xxxx *buf);
 
-	virtual void SWITCH(s_m3Exxxx *buf);													// peer related communication
-	virtual void TIMESTAMP(s_m3fxxxx *buf);													// needed as send and receive function,
-	virtual void REMOTE(s_m40xxxx *buf);													// but all channel module related
-	virtual void SENSOR_EVENT(s_m41xxxx *buf);												// all forwarded to ptr_CM
-	virtual void SWITCH_LEVEL(s_m42xxxx *buf);
-	virtual void SENSOR_DATA(s_m53xxxx *buf);
-	virtual void GAS_EVENT(s_m54xxxx *buf);
-	virtual void CLIMATE_EVENT(s_m58xxxx *buf);
-	virtual void SET_TEAM_TEMP(s_m59xxxx *buf);
-	virtual void THERMAL_CONTROL(s_m5axxxx *buf);
-	virtual void POWER_EVENT_CYCLE(s_m5exxxx *buf);
-	virtual void POWER_EVENT(s_m5fxxxx *buf);
-	virtual void WEATHER_EVENT(s_m70xxxx *buf);
+
+	/* consolidation to one virtual function as virtual functions take 6 byte each */
+
+	//virtual void SWITCH(s_m3Exxxx *buf);													// peer related communication
+	//virtual void TIMESTAMP(s_m3fxxxx *buf);													// needed as send and receive function,
+	//virtual void REMOTE(s_m40xxxx *buf);													// but all channel module related
+	//virtual void SENSOR_EVENT(s_m41xxxx *buf);												// all forwarded to ptr_CM
+	//virtual void SWITCH_LEVEL(s_m42xxxx *buf);
+	//virtual void SENSOR_DATA(s_m53xxxx *buf);
+	//virtual void GAS_EVENT(s_m54xxxx *buf);
+	//virtual void CLIMATE_EVENT(s_m58xxxx *buf);
+	//virtual void SET_TEAM_TEMP(s_m59xxxx *buf);
+	//virtual void THERMAL_CONTROL(s_m5axxxx *buf);
+	//virtual void POWER_EVENT_CYCLE(s_m5exxxx *buf);
+	//virtual void POWER_EVENT(s_m5fxxxx *buf);
+	//virtual void WEATHER_EVENT(s_m70xxxx *buf);
 
 
 };

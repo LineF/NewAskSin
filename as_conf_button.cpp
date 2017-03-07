@@ -10,8 +10,8 @@
 
 
 // public:		//---------------------------------------------------------------------------------------------------------
-CBN::CBN(uint8_t mode, const s_pin_def *ptr_pin) {
-	key_pin = ptr_pin;
+CBN::CBN(uint8_t mode, uint8_t pin_def) {
+	def_key = pin_def;
 	button_check.configured = 1;															// poll the pin make only sense if it was configured, store result here
 	button_check.scenario = mode;
 }
@@ -22,9 +22,9 @@ CBN::CBN(const uint8_t mode) {
 }
 
 void CBN::init(void) {
-	register_PCINT(key_pin);																// prepare hardware and register interrupt
+	register_PCINT(def_key);																// prepare hardware and register interrupt
 
-	status = check_PCINT(key_pin, 0);														// get the latest information
+	status = check_PCINT(def_key, 0);														// get the latest information
 
 }
 void CBN::poll(void) {
@@ -36,7 +36,7 @@ void CBN::poll(void) {
 	if (!button_check.configured) return;													// pin info not set, nothing to do
 
 	// 0 for button is pressed, 1 for released, 2 for falling and 3 for rising edge
-	status = check_PCINT(key_pin, 1);														// check if an interrupt had happened
+	status = check_PCINT(def_key, 1);														// check if an interrupt had happened
 
 	/* button was just pressed, start for every option */
 	if (status == 2) {
@@ -97,8 +97,8 @@ void CBN::button_action(MSG_CBN::E mode) {
 		DBG(CB, F("keyShort"));					
 		led->stop();
 		led->set(LED_STAT::LED_RED_L);
-		if (button_check.scenario == 1) hm->send_DEVICE_INFO(MSG_REASON::INITIAL);				// send pairing string
-		else if (button_check.scenario == 2) cmm[1]->set_toggle();							// send toggle to user module registered on channel 1
+		if (button_check.scenario == 1) hm.send_DEVICE_INFO(MSG_REASON::INITIAL);				// send pairing string
+//		else if (button_check.scenario == 2) cmm[1]->set_toggle();							// send toggle to user module registered on channel 1
 
 	} else if (mode == MSG_CBN::keyLong) {
 		DBG(CB, F("keyLong"));
@@ -106,7 +106,7 @@ void CBN::button_action(MSG_CBN::E mode) {
 
 	} else if (mode == MSG_CBN::keyLongRelease) {
 		DBG(CB, F("keyLongRelease"));
-		if (button_check.scenario == 2) hm->send_DEVICE_INFO(MSG_REASON::INITIAL);				// send pairing string
+		if (button_check.scenario == 2) hm.send_DEVICE_INFO(MSG_REASON::INITIAL);				// send pairing string
 
 	} else if (mode == MSG_CBN::keyDblLong) {
 		DBG(CB, F("keyDblLong"));
