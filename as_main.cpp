@@ -365,7 +365,7 @@ void AS::process_message(void) {
 		else if (rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_ENTER_BOOTLOADER))   INSTRUCTION_ENTER_BOOTLOADER(&rcv_msg.m1183xx);
 		else if (rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_ADAPTION_DRIVE_SET)) INSTRUCTION_ADAPTION_DRIVE_SET(&rcv_msg.m1187xx);
 		else if (rcv_by10 == BY10(MSG_TYPE::INSTRUCTION_ENTER_BOOTLOADER2))  INSTRUCTION_ENTER_BOOTLOADER2(&rcv_msg.m11caxx);
-		else pCM->instruction_msg(rcv_by10, rcv_msg.buf);
+		else pCM->instruction_msg((MSG_TYPE::E)rcv_by10, rcv_msg.buf);
 
 
 	} else if (rcv_by03 == BY03(MSG_TYPE::HAVE_DATA)) {
@@ -406,7 +406,7 @@ void AS::process_message(void) {
 		}
 
 		/* forward to the respective channel function */
-		pCM->peer_action_msg(rcv_by03, rcv_msg.buf);
+		pCM->peer_action_msg((MSG_TYPE::E)rcv_by03, rcv_msg.buf);
 
 
 	} else {
