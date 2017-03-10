@@ -300,7 +300,7 @@ uint16_t get_internal_voltage(void) {
 uint16_t get_external_voltage(uint8_t pin_enable, uint8_t pin_measure, uint8_t z1, uint8_t z2) {
 	static uint16_t values[BAT_OVERSAMPLING];
 	static uint8_t v_idx;
-	uint8_t cnt = 0;
+	uint8_t cnt, mask;
 	uint32_t result = 0;
 
 	/* set the pins to enable measurement */
@@ -310,10 +310,15 @@ uint16_t get_external_voltage(uint8_t pin_enable, uint8_t pin_measure, uint8_t z
 	set_pin_low(pin_measure);																// switch off pull-up resistor to get correct measurement
 
 	/* call the adc get function to get the adc value, do some mathematics on the result */
-	values[v_idx++] = get_adc_value(admux_external | PORTC1 /* digitalPinToBitMask(pin_measure)*/);		// get the adc value on base of the predefined adc register setup
+	cnt = 0;
+	mask = digitalPinToBitMask(pin_measure);
+	while (mask >>= 1) cnt++;
+		
+	values[v_idx++] = get_adc_value(admux_external | cnt);									// get the adc value on base of the predefined adc register setup
 	//DBG(SER, F("bat:curr:"), values[v_idx-1]);
 	if (v_idx >= BAT_OVERSAMPLING) v_idx = 0;
 
+	cnt = 0;
 	for (uint8_t i = 0; i < BAT_OVERSAMPLING; i++)
 		if (values[i] > 0)
 			result += values[i], cnt++;
