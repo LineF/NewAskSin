@@ -9,37 +9,30 @@
 #include <newasksin.h> 
 #include "hmkey.h"
 
+
 /*
 *  @brief definition of all classes which are necassary to run asksin
 */
-//AES *aes = create<AES, NO_AES>();
-NO_AES as_aes;
+NO_AES as_aes;															//   60 byte flash,  69 byte sram
+//HAS_AES as_aes;														// 2826 byte flash, 277 byte sram
 AES *aes = &as_aes;
-//AES &aes = *new NO_AES(); //new NO_AES();								//   60 byte flash,  69 byte sram
-//AES *aes = new HAS_AES();												// 2826 byte flash, 277 byte sram
 
-//COM *com = create<COM, CC1101>(pinB4, pinB3, pinB5, pinB2, pinD2);
-CC1101 as_cc1101(pinB4, pinB3, pinB5, pinB2, pinD2);				//  546 byte flash, 124 byte sram
-COM *com = &as_cc1101;													//  546 byte flash, 124 byte sram
-//COM *com = new CC1101(pinB4, pinB3, pinB5, pinB2, pinD2);				//  546 byte flash, 124 byte sram
+CC1101 as_cc1101(pinB4, pinB3, pinB5, pinB2, pinD2);					//  546 byte flash, 124 byte sram
+COM *com = &as_cc1101;
 
-CBN as_cbn(1, pinB0);										//   80 byte flash,  25 byte sram
-CBN *cbn = &as_cbn;										//   80 byte flash,  25 byte sram
-//CBN *cbn = new CBN(1, pinB0);										//   80 byte flash,  25 byte sram
+CBN as_cbn(1, pinB0);													//   80 byte flash,  25 byte sram
+CBN *cbn = &as_cbn;
 
-LED as_led(pinD6, pinD4);										//  150 byte flash,  51 byte sram
-LED *led = &as_led;										//  150 byte flash,  51 byte sram
-//LED *led = new LED(pinD6, pinD4);										//  150 byte flash,  51 byte sram
+LED as_led(pinD6, pinD4);												//  150 byte flash,  51 byte sram
+LED *led = &as_led;	
 
-NO_BAT as_bat;											//   34 byte flash,  22 byte sram
-BAT *bat = &as_bat;											//   34 byte flash,  22 byte sram
-//BAT *bat = new NO_BAT();											//   34 byte flash,  22 byte sram
-//BAT *bat = new INT_BAT(3600000, 30);								//  176 byte flash,  22 byte sram
-//BAT *bat = new EXT_BAT(3600000, 30, pinD7, pinC6, 10, 45);		//  386 byte flash,  56 byte sram
+NO_BAT as_bat;															//   34 byte flash,  22 byte sram
+//INT_BAT as_bat(3600000, 30);											//  176 byte flash,  22 byte sram
+//EXT_BAT as_bat(3600000, 30, pinD7, pinC6, 10, 45);					//  386 byte flash,  56 byte sram
+BAT *bat = &as_bat;
 
-POM as_pom(POWER_MODE_NO_SLEEP);							//   68 byte flash,  19 byte sram
-POM *pom = &as_pom;							//   68 byte flash,  19 byte sram
-//POM *pom = new POM(POWER_MODE_NO_SLEEP);							//   68 byte flash,  19 byte sram
+POM as_pom(POWER_MODE_NO_SLEEP);										//   68 byte flash,  19 byte sram
+POM *pom = &as_pom;
 
 
 /*
@@ -54,23 +47,17 @@ const uint8_t cm_maintenance_ChnlLen = sizeof(cm_maintenance_ChnlReg);
 /*
 *  @brief definition of the device functionallity per channel
 */
-static CM_MAINTENANCE cm_maintenance(0);											//   24 byte flash, 124 byte sram
-static CM_DIMMER cm_dimmer1(10, 0, 0);											// 7332 byte flash, 330 byte sram - further 256 byte flash, 173 byte sram
-static CM_DIMMER cm_dimmer2(2, 1, 0);
-static CM_DIMMER cm_dimmer3(2, 2, 0);
+CM_MAINTENANCE cm_maintenance(0);								//   24 byte flash, 124 byte sram
+CM_DIMMER cm_dimmer1(10, 0, 0);									// 7332 byte flash, 330 byte sram - further 256 byte flash, 173 byte sram
+CM_DIMMER cm_dimmer2(2, 1, 0);
+CM_DIMMER cm_dimmer3(2, 2, 0);
 
 CM_MASTER *cmm[4] = {
-	&cm_maintenance,											//   24 byte flash, 124 byte sram
-	&cm_dimmer1,											// 7332 byte flash, 330 byte sram - further 256 byte flash, 173 byte sram
+	&cm_maintenance,
+	&cm_dimmer1,
 	&cm_dimmer2,
 	&cm_dimmer3,
 };
-/*CM_MASTER *cmm[4] = {
-	new CM_MAINTENANCE(0),											//   24 byte flash, 124 byte sram
-	new CM_DIMMER(10,0,0),											// 7332 byte flash, 330 byte sram - further 256 byte flash, 173 byte sram
-	new CM_DIMMER(2,1,0),
-	new CM_DIMMER(2,2,0),
-};*/
 
 
 /*
@@ -78,7 +65,7 @@ CM_MASTER *cmm[4] = {
 */
 const uint8_t HMSerialData[] PROGMEM = {
 	/* HMID */            0x33,0x11,0x24,
-	/* Serial number */   'H','B','d','i','m','m','e','r','0','1',		// HBswitch01 
+	/* Serial number */   'H','B','d','i','m','m','e','r','0','1',		// HBdimmer01 
 	/* Key-Index */       HM_DEVICE_AES_KEY_INDEX,
 	/* Default-Key */     HM_DEVICE_AES_KEY,
 };
@@ -97,7 +84,7 @@ const uint8_t HMSerialData[] PROGMEM = {
 *                  Other bytes not known.
 *                  23:0 0.4, means first four bit of byte 23 reflecting the amount of channels.
 */
-const uint8_t dev_static[] PROGMEM = {             // testID 
+const uint8_t dev_static[] PROGMEM = {            // testID 
 	/* firmwareVersion 1 byte */  0x25,           // or GE 
 	/* modelID         2 byte */  0x00,0x67,
 	/* subTypeID       1 byte */  0x00,           // replace __ by a valid type id 
@@ -132,11 +119,11 @@ void firstTimeStart(void) {
 #endif
 
 /*
- * @brief Channel structs (for developers)
- * Within the channel struct you will find the definition of the respective registers per channel and list.
- * These information is only needed if you want to develop your own channel module, for pre defined
- * channel modules all this definitions enclosed in the pre defined module.
- */
+* @brief Channel structs (for developers)
+* Within the channel struct you will find the definition of the respective registers per channel and list.
+* These information is only needed if you want to develop your own channel module, for pre defined
+* channel modules all this definitions enclosed in the pre defined module.
+*/
 
 struct s_cnl0_lst0 {
 	uint8_t                          : 7;  // 0x02.0, s:7   d:   
@@ -261,59 +248,58 @@ struct s_cnl1_lst3 {
 	uint8_t LONG_ELSE_JT_RAMPOFF     : 4;  // 0xa9.4, s:4   d: ONDELAY  
 }; // 60 byte
 
- /*
- * @brief Message description:
- *
- *        00        01 02    03 04 05  06 07 08  09  10  11   12     13
- * Length MSG_Count    Type  Sender__  Receiver  ACK Cnl Stat Action RSSI
- * 0F     12        80 02    1E 7A AD  23 70 EC  01  01  BE   20     27    dimmer
- * 0E     5C        80 02    1F B7 4A  63 19 63  01  01  C8   00     42    pcb relay
- *
- * Needed frames:
- *
- * // INSTRUCTION_SET
- * <frame id="LEVEL_SET" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
- *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
- *      <parameter type="integer" index="12.0" size="2.0" PARAM="RAMP_TIME"/>
- *      <parameter type="integer" index="14.0" size="2.0" PARAM="ON_TIME" omit_if="0"/>
- * <frame id="RAMP_STOP" direction="to_device" type="0x11" subtype="0x03" subtype_index="9" channel_field="10">
- * <frame id="OLD_LEVEL" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
- *      <parameter type="integer" index="11.0" size="1.0" const_value="201"/>
- *      <parameter type="integer" index="12.0" size="2.0" PARAM="RAMP_TIME"/>
- *      <parameter type="integer" index="14.0" size="2.0" PARAM="ON_TIME" omit_if="0"/>
- * <frame id="SET_LOCK" direction="to_device" type="0x11" channel_field="10">
- *      <parameter type="integer" index="9.0" size="0.1" param="INHIBIT"/>
- * <frame id="LEVEL_GET" direction="to_device" type="0x01" channel_field="9">
- *      <parameter type="integer" index="10.0" size="1.0" const_value="14"/>
- * <frame id="INFO_LEVEL" direction="from_device" allowed_receivers="BROADCAST,CENTRAL,OTHER" event="true" type="0x10" subtype="6" subtype_index="9" channel_field="10">
- *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
- *      <parameter type="integer" index="12.1" size="0.3" param="ERROR"/>
- *      <parameter type="integer" index="12.1" size="0.1" param="ERROR_OVERLOAD"/>
- *      <parameter type="integer" index="12.2" size="0.1" param="ERROR_OVERHEAT"/>
- *      <parameter type="integer" index="12.3" size="0.1" param="ERROR_REDUCED"/>
- *      <parameter type="integer" index="12.4" size="0.3" param="STATE_FLAGS"/>
- *      <parameter type="integer" index="12.4" size="0.2" param="DIRECTION_FLAGS"/>
- *
- * // INFO_ACTUATOR_STATUS
- * <frame id="ACK_STATUS" direction="from_device" event="true" type="0x02" subtype="1" subtype_index="9" channel_field="10">
- *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
- *      <parameter type="integer" index="12.1" size="0.3" param="ERROR"/>
- *      <parameter type="integer" index="12.1" size="0.1" param="ERROR_OVERLOAD"/>
- *      <parameter type="integer" index="12.2" size="0.1" param="ERROR_OVERHEAT"/>
- *      <parameter type="integer" index="12.3" size="0.1" param="ERROR_REDUCED"/>
- *      <parameter type="integer" index="12.4" size="0.3" param="STATE_FLAGS"/>
- *      <parameter type="integer" index="12.4" size="0.2" param="DIRECTION_FLAGS"/>
- *
- * // INSTRUCTION_SET
- * <frame id="TOGGLE_INSTALL_TEST" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
- *      <parameter type="integer" index="11.0" size="1.0" param="TOGGLE_FLAG"/>
- *      <parameter type="integer" index="12.0" size="2.0" const_value="0"/>
- *
- * // INFO_ACTUATOR_STATUS
- * <frame id="INFO_POWERON" direction="from_device" allowed_receivers="CENTRAL" event="true" type="0x10" subtype="6" subtype_index="9" fixed_channel="*">
- *      <parameter type="integer" index="10.0" size="1.0" const_value="0"/>
- *      <parameter type="integer" const_value="0" param="LEVEL"/>
- *      <parameter type="integer" const_value="0" param="STATE_FLAGS"/>
- *      <parameter type="integer" const_value="0" param="INHIBIT"/>
- */
-
+   /*
+   * @brief Message description:
+   *
+   *        00        01 02    03 04 05  06 07 08  09  10  11   12     13
+   * Length MSG_Count    Type  Sender__  Receiver  ACK Cnl Stat Action RSSI
+   * 0F     12        80 02    1E 7A AD  23 70 EC  01  01  BE   20     27    dimmer
+   * 0E     5C        80 02    1F B7 4A  63 19 63  01  01  C8   00     42    pcb relay
+   *
+   * Needed frames:
+   *
+   * // INSTRUCTION_SET
+   * <frame id="LEVEL_SET" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
+   *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
+   *      <parameter type="integer" index="12.0" size="2.0" PARAM="RAMP_TIME"/>
+   *      <parameter type="integer" index="14.0" size="2.0" PARAM="ON_TIME" omit_if="0"/>
+   * <frame id="RAMP_STOP" direction="to_device" type="0x11" subtype="0x03" subtype_index="9" channel_field="10">
+   * <frame id="OLD_LEVEL" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
+   *      <parameter type="integer" index="11.0" size="1.0" const_value="201"/>
+   *      <parameter type="integer" index="12.0" size="2.0" PARAM="RAMP_TIME"/>
+   *      <parameter type="integer" index="14.0" size="2.0" PARAM="ON_TIME" omit_if="0"/>
+   * <frame id="SET_LOCK" direction="to_device" type="0x11" channel_field="10">
+   *      <parameter type="integer" index="9.0" size="0.1" param="INHIBIT"/>
+   * <frame id="LEVEL_GET" direction="to_device" type="0x01" channel_field="9">
+   *      <parameter type="integer" index="10.0" size="1.0" const_value="14"/>
+   * <frame id="INFO_LEVEL" direction="from_device" allowed_receivers="BROADCAST,CENTRAL,OTHER" event="true" type="0x10" subtype="6" subtype_index="9" channel_field="10">
+   *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
+   *      <parameter type="integer" index="12.1" size="0.3" param="ERROR"/>
+   *      <parameter type="integer" index="12.1" size="0.1" param="ERROR_OVERLOAD"/>
+   *      <parameter type="integer" index="12.2" size="0.1" param="ERROR_OVERHEAT"/>
+   *      <parameter type="integer" index="12.3" size="0.1" param="ERROR_REDUCED"/>
+   *      <parameter type="integer" index="12.4" size="0.3" param="STATE_FLAGS"/>
+   *      <parameter type="integer" index="12.4" size="0.2" param="DIRECTION_FLAGS"/>
+   *
+   * // INFO_ACTUATOR_STATUS
+   * <frame id="ACK_STATUS" direction="from_device" event="true" type="0x02" subtype="1" subtype_index="9" channel_field="10">
+   *      <parameter type="integer" index="11.0" size="1.0" param="LEVEL"/>
+   *      <parameter type="integer" index="12.1" size="0.3" param="ERROR"/>
+   *      <parameter type="integer" index="12.1" size="0.1" param="ERROR_OVERLOAD"/>
+   *      <parameter type="integer" index="12.2" size="0.1" param="ERROR_OVERHEAT"/>
+   *      <parameter type="integer" index="12.3" size="0.1" param="ERROR_REDUCED"/>
+   *      <parameter type="integer" index="12.4" size="0.3" param="STATE_FLAGS"/>
+   *      <parameter type="integer" index="12.4" size="0.2" param="DIRECTION_FLAGS"/>
+   *
+   * // INSTRUCTION_SET
+   * <frame id="TOGGLE_INSTALL_TEST" direction="to_device" type="0x11" subtype="0x02" subtype_index="9" channel_field="10">
+   *      <parameter type="integer" index="11.0" size="1.0" param="TOGGLE_FLAG"/>
+   *      <parameter type="integer" index="12.0" size="2.0" const_value="0"/>
+   *
+   * // INFO_ACTUATOR_STATUS
+   * <frame id="INFO_POWERON" direction="from_device" allowed_receivers="CENTRAL" event="true" type="0x10" subtype="6" subtype_index="9" fixed_channel="*">
+   *      <parameter type="integer" index="10.0" size="1.0" const_value="0"/>
+   *      <parameter type="integer" const_value="0" param="LEVEL"/>
+   *      <parameter type="integer" const_value="0" param="STATE_FLAGS"/>
+   *      <parameter type="integer" const_value="0" param="INHIBIT"/>
+   */
