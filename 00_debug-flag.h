@@ -33,8 +33,8 @@
 //#define MN_DBG					// Maintenance channel module (cmMaintenance.cpp)
 //#define SW_DBG					// Switsch channel module (cmSwitch.cpp)
 //#define TH_DBG					// TH channel module (cm_thsensor.cpp)
-//#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
-#define RE_DBG					// Remote channel module (cmRemote.cpp)
+#define DM_DBG					// Dimmer channel module (cmDimmer.cpp)
+//#define RE_DBG					// Remote channel module (cmRemote.cpp)
 
 
 /*
