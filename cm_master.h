@@ -91,7 +91,7 @@ public://-----------------------------------------------------------------------
 	void CONFIG_WRITE_INDEX2(s_m01xx08 *buf);
 	void CONFIG_SERIAL_REQ(s_m01xx09 *buf);
 	void CONFIG_PAIR_SERIAL(s_m01xx0a *buf);
-	void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);												// only for list3 devices needed
+	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);										// only for list3 devices needed
 
 	/* ACK related receive functions, not needed in the channel module, while handled in master */
 	/*void ACK(s_m0200xx *buf);																// at the moment we need the ACK only to avoid
