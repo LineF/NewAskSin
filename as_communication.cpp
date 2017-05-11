@@ -118,8 +118,10 @@ void    CC1101::init(void) {
 
 	/* define init settings for TRX868 */
 	static const uint8_t initVal[] PROGMEM = {
-		CC1101_IOCFG2,    0x2E,						// non inverted GDO2, high impedance tri state
-		CC1101_IOCFG0,    0x06,						// disable temperature sensor, non inverted GDO0,
+		//CC1101_IOCFG2,    0x2E,						// non inverted GDO2, high impedance tri state
+		//CC1101_IOCFG0,    0x06,						// disable temperature sensor, non inverted GDO0,
+		CC1101_IOCFG0,    0x2E,						// non inverted GDO0, high impedance tri state, disable temperature sensor
+		CC1101_IOCFG2,    0x06,						// non inverted GDO2
 		CC1101_FIFOTHR,   0x0D,						// 0 ADC retention, 0 close in RX, TX FIFO = 9 / RX FIFO = 56 byte
 		CC1101_SYNC1,     0xE9,						// Sync word
 		CC1101_SYNC0,     0xCA,
