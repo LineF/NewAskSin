@@ -59,6 +59,10 @@ void CM_MASTER::info_config_change(uint8_t channel) {
 	DBG(CM, F("CM"), lstC.cnl, F(":CONFIG_CHANGE- cnl:"), channel, '\n');
 }
 
+void CM_MASTER::info_peer_add(s_m01xx01 *buf) {
+	DBG(CM, F("CM:info_peer_add, peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), '\n');
+}
+
 /**
 * we received an peer remove event, which means, there was a peer removed in this respective channel
 * 1st 3 bytes shows the peer address, 4th and 5th byte gives the peer channel
@@ -118,6 +122,7 @@ void CM_MASTER::CONFIG_PEER_ADD(s_m01xx01 *buf) {
 		}
 	}
 
+	info_peer_add(buf);																		// inform the user module of the added peer
 	DBG(CM, F("CM"), lstC.cnl, F(":CONFIG_PEER_ADD- cnl:"), buf->MSG_CNL, F(", peer:"), _HEX(buf->PEER_ID, 3), F(", CNL_A:"), _HEX(buf->PEER_CNL[0]), F(", CNL_B:"), _HEX(buf->PEER_CNL[1]), F(", RET:"), ret_byte, '\n');
 	hm.check_send_ACK_NACK(ret_byte);
 }

@@ -58,6 +58,7 @@ public:  //---------------------------------------------------------------------
 
 	virtual void cm_poll(void);																// poll function, driven by HM loop
 	virtual void CONFIG_STATUS_REQUEST(s_m01xx0e *buf);
+	//virtual void info_config_change(uint8_t channel);										// list1 on registered channel had changed
 	virtual void info_peer_add(s_m01xx01 *buf);
 	virtual void info_peer_remove(s_m01xx02 *buf);
 

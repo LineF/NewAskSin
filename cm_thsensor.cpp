@@ -67,6 +67,15 @@ void cm_thsensor::CONFIG_STATUS_REQUEST(s_m01xx0e *buf) {
 	DBG(TH, F("TH:CONFIG_STATUS_REQUEST\n"));
 }
 
+//void cm_thsensor::info_config_change(uint8_t channel)										// list1 on registered channel had changed
+//{
+//	if (lstC.cnl != channel) return;
+//	DBG(TH, F("TH"), lstC.cnl, F(":CONFIG_CHANGE\n"));
+//
+//	cnl0Change();
+//}
+
+
 void cm_thsensor::info_peer_add(s_m01xx01 *buf) {
 //	CM_MASTER::info_peer_add(buf);
 	cnl0Change();
