@@ -40,6 +40,8 @@
 	#include "HAL_atmega_328P.h"
 #elif defined(__AVR_ATmega32U4__)
 	#include "HAL_atmega_32U4.h"
+#elif defined(__AVR_ATmega644PA__)
+	#include "HAL_atmega_644PA.h"
 #else
 	#error "No HAL definition for current MCU available!"
 #endif

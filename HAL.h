@@ -122,6 +122,7 @@ extern void add_millis(uint32_t ms);
 extern uint16_t get_internal_voltage(void);
 extern void init_external_voltage(uint8_t pin_enable, uint8_t pin_measure);
 extern uint16_t get_external_voltage(const uint8_t pin_enable, uint8_t pin_measure, uint8_t z1, uint8_t z2);
+*/
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
