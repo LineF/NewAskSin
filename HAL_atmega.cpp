@@ -84,14 +84,16 @@ void register_PCINT(uint8_t def_pin) {
 
 	// need to get vectore 0 - 2, depends on cpu
 	uint8_t vec = digitalPinToPCICRbit(def_pin);											// needed for interrupt handling and to sort out the port
-	uint8_t port = digitalPinToPort(def_pin);													// need the pin port to get further information as port register
+	uint8_t port = digitalPinToPort(def_pin);												// need the pin port to get further information as port register
+	uint8_t bit = digitalPinToBitMask(def_pin);
 	if (port == NOT_A_PIN) return;															// return while port was not found
 
 	pcint_vector[vec].PINREG = portInputRegister(port);										// remember the input register
-	pcint_vector[vec].curr |= get_pin_status(def_pin);										// remember current status of the port bit
+	pcint_vector[vec].curr |= *pcint_vector[vec].PINREG & bit;								// remember current status of the port bit
 	pcint_vector[vec].prev = pcint_vector[vec].curr;										// and set it as previous while we check for changes
+	//DBG(CB, F("register_PCINT: vec:"), vec, F(", port:"), port, F("curr: "), pcint_vector[vec].curr, F("\n"));
 
-	pcint_vector[vec].mask |= digitalPinToBitMask(def_pin);									// set the pin bit in the bitmask
+	pcint_vector[vec].mask |= bit;															// set the pin bit in the bitmask
 
 	*digitalPinToPCICR(def_pin) |= _BV(digitalPinToPCICRbit(def_pin));						// pci functions
 	*digitalPinToPCMSK(def_pin) |= _BV(digitalPinToPCMSKbit(def_pin));						// make the pci active
@@ -104,6 +106,7 @@ uint8_t check_PCINT(uint8_t def_pin, uint8_t debounce) {
 
 	uint8_t status = pcint_vector[vec].curr & bit ? 1 : 0;									// evaluate the pin status
 	uint8_t prev = pcint_vector[vec].prev & bit ? 1 : 0;									// evaluate the previous pin status
+	//DBG(CB, F("check_PCINT: vec:"), vec, F(", bit:"), bit, F("curr: "), status, F(", prev:"), prev, F("\n"));
 
 	if (status == prev) return status;														// check if something had changed since last time
 	if (debounce && ((get_millis() - pcint_vector[vec].time) < DEBOUNCE)) return status;	// seems there is a change, check if debounce is necassary and done
