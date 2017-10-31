@@ -54,12 +54,12 @@ template<class T> inline Print &operator ,(Print &obj, T arg) { return obj << ar
 #define DBG( MODULE, ...) PRIMITIVE_CAT(DBG_, MODULE, __VA_ARGS__)
 #define DBG_START( MODULE, ...) PRIMITIVE_CAT(DBG_START_, MODULE, __VA_ARGS__)
 
-#define _DBG_START(...)   power_usart0_enable();if (!(UCSR & (1<<RXEN))) {Serial.begin(57600);} Serial ,__VA_ARGS__;
+#define _DBG_START(...)   power_serial_enable();if (!(UCSR & (1<<RXEN))) {SerialX.begin(57600);} SerialX ,__VA_ARGS__;
 
 /* main sketch */
 #ifdef SER_DBG
 	#define DBG_START_SER(...) _DBG_START(__VA_ARGS__)
-	#define DBG_SER(...) Serial ,__VA_ARGS__
+	#define DBG_SER(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_START_SER(...)
 	#define DBG_SER(...) 
@@ -67,84 +67,91 @@ template<class T> inline Print &operator ,(Print &obj, T arg) { return obj << ar
 
 /* asksin main class */
 #ifdef AS_DBG
-	#define DBG_AS(...) Serial ,__VA_ARGS__
+	#define DBG_AS(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_AS(...) 
 #endif
 
+/* EEPROM functions */
+#ifdef EE_DBG
+	#define DBG_EE(...) SerialX ,__VA_ARGS__
+#else
+	#define DBG_EE(...)
+#endif
+
 /* cc1101 class */
 #ifdef CC_DBG
-	#define DBG_CC(...) Serial ,__VA_ARGS__
+	#define DBG_CC(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_CC(...) 
 #endif
 
 /* send module */
 #ifdef SN_DBG
-	#define DBG_SN(...) Serial ,__VA_ARGS__
+	#define DBG_SN(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_SN(...) 
 #endif
 
 /* receive module */
 #ifdef RV_DBG
-	#define DBG_RV(...) Serial ,__VA_ARGS__
+	#define DBG_RV(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_RV(...) 
 #endif
 
 /* config button class */
 #ifdef CB_DBG
-	#define DBG_CB(...) Serial ,__VA_ARGS__
+	#define DBG_CB(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_CB(...) 
 #endif
 
 /* status led class */
 #ifdef LD_DBG
-	#define DBG_LD(...) Serial ,__VA_ARGS__
+	#define DBG_LD(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_LD(...) 
 #endif
 
 /* channel master class */
 #ifdef CM_DBG
-	#define DBG_CM(...) Serial ,__VA_ARGS__
+	#define DBG_CM(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_CM(...) 
 #endif
 
 /* maintenance channel module */
 #ifdef MN_DBG
-#define DBG_MN(...) Serial ,__VA_ARGS__
+#define DBG_MN(...) SerialX ,__VA_ARGS__
 #else
 #define DBG_MN(...) 
 #endif
 
 /* channel module switch */
 #ifdef SW_DBG
-	#define DBG_SW(...) Serial ,__VA_ARGS__
+	#define DBG_SW(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_SW(...) 
 #endif
 
 /* channel module th sensor */
 #ifdef TH_DBG
-	#define DBG_TH(...) Serial ,__VA_ARGS__
+	#define DBG_TH(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_TH(...) 
 #endif
 
 /* channel module dimmer */
 #ifdef DM_DBG
-	#define DBG_DM(...) Serial ,__VA_ARGS__
+	#define DBG_DM(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_DM(...) 
 #endif
 
 /* channel module remote */
 #ifdef RE_DBG
-	#define DBG_RE(...) Serial ,__VA_ARGS__
+	#define DBG_RE(...) SerialX ,__VA_ARGS__
 #else
 	#define DBG_RE(...) 
 #endif

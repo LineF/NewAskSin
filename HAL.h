@@ -156,7 +156,6 @@ extern uint16_t freeRam();
 * based on arduino serial class, so should work with all hardware served in arduino
 * http://aeroquad.googlecode.com/svn/branches/pyjamasam/WIFIReceiver/Streaming.h
 */
-#define dbg Serial
 template<class T> inline Print &operator <<(Print &obj, T arg) { obj.print(arg); return obj; }
 
 const char num2char[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',  'A', 'B', 'C', 'D', 'E', 'F', };

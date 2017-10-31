@@ -1,4 +1,5 @@
 #define power_serial_enable()   power_usb_enable(); pinOutput(DDRB, PINB0);		// pin output, otherwise USB will not work
+#define SerialX					Serial
 #define UCSR                    UCSR1B
 #define RXEN                    RXEN1
 

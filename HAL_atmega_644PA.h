@@ -9,7 +9,25 @@
 
 
 //- debug specific --------------------------------------------------------------------------------------------------------
-#define power_debug_enable()    power_usart0_enable();
+#define USART_1						// USART0 or USART1
+
+#if defined(USART_0)
+	#define power_serial_enable()   power_usart0_enable();
+	#define power_serial_disable()  power_usart0_disable();
+	#define SerialX					Serial
+	#define dbg						SerialX
+	#define UCSR                    UCSR0B
+	#define RXEN                    RXEN0
+#elif defined(USART_1)
+	#define power_serial_enable()   power_usart1_enable();
+	#define power_serial_disable()  power_usart1_disable();
+	#define SerialX					Serial1
+	#define dbg						SerialX
+	#define UCSR                    UCSR1B
+	#define RXEN                    RXEN1
+#else
+	#error "please use USART_0 or USART_1"
+#endif
 //- -------------------------------------------------------------------------------------------------------------------------
 
 
@@ -50,8 +68,8 @@ static void init_millis_timer2(int16_t correct_ms) {
 
 
 //- power management definitions --------------------------------------------------------------------------------------------
-#define backupPwrRegs()         uint8_t xPrr = PRR; PRR = 0xFF;
-#define recoverPwrRegs()        PRR = xPrr;
+#define backupPwrRegs()         uint8_t xPrr = PRR0; PRR0 = 0xFF;
+#define recoverPwrRegs()        PRR0 = xPrr;
 #define offBrownOut()           MCUCR = (1<<BODS)|(1<<BODSE); MCUCR = (1<<BODS);
 //- -------------------------------------------------------------------------------------------------------------------------
 
@@ -101,10 +119,7 @@ const uint16_t ref_v_external = 1100;															// internal reference voltag
 #define pinA5 (29)
 #define pinA6 (30)
 #define pinA7 (31)
-
-
 //- -------------------------------------------------------------------------------------------------------------------------
-
 
 
 #endif

@@ -5,6 +5,7 @@
 
 #define power_serial_enable()   power_usart0_enable();
 #define power_serial_disable()  power_usart0_disable();
+#define SerialX					Serial
 #define UCSR                    UCSR0B
 #define RXEN                    RXEN0
 
