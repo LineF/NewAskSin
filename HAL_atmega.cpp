@@ -173,6 +173,8 @@ uint8_t spi_send_byte(uint8_t send_byte) {
 
 
 //-- eeprom functions -----------------------------------------------------------------------------------------------------
+#if defined(EEPROM_INTERNAL)
+
 void init_eeprom(void) {
 	// place the code to init a i2c eeprom
 }
@@ -194,6 +196,133 @@ void clear_eeprom(uint16_t addr, uint16_t len) {
 		set_eeprom(addr + l, 1, (void*)&tB);
 	}
 }
+
+void wait_eeprom(void) {																	// wait for eeprom write finished
+	while (!eeprom_is_ready())
+		;
+}
+
+#elif defined(EEPROM_M95512)
+
+// M95512 SPI Commands
+#define EE_M95512_WREN		0x06
+#define EE_M95512_WRDI		0x04
+#define EE_M95512_RDSR		0x05
+#define EE_M95512_WRSR		0x01
+#define EE_M95512_READ		0x03
+#define EE_M95512_WRITE		0x02
+
+void init_eeprom(void) {
+	set_pin_output(pinB3);																	// set chip select as output
+	set_pin_high(pinB3);																	// while module is low active
+	set_pin_output(pinB4);																	// workaround to stay as SPI master
+	set_pin_output(pinB5);																	// set MOSI as output
+	set_pin_input(pinB6);																	// set MISO as input
+	set_pin_output(pinB7);																	// set SCK as output
+	enable_spi();																			// enable spi
+}
+
+void get_eeprom(uint16_t addr, uint8_t len, void *ptr) {
+	uint8_t *p = (uint8_t *)ptr;
+	uint8_t l = len;
+
+	DBG(EE, F("EE: rd addr: "), _HEX((uint8_t *)&addr, 2), F(", len: "), _HEX(len));
+
+	set_pin_low(EE_CS);																	// enable chip select
+	spi_send_byte(EE_M95512_READ);														// send READ command to EEPROM
+	spi_send_byte(addr >> 8);															// send address high byte
+	spi_send_byte(addr & 0xFF);															// send address low byte
+	
+	while (l-- > 0)
+		*p++ = spi_send_byte(0x00);														// read data bytes from EEPROM
+
+	DBG(EE, F(", "), _HEX((uint8_t *)ptr, len), F("\n"));
+	set_pin_high(EE_CS);																// disable chip select
+}
+
+void set_eeprom(uint16_t addr, uint8_t len, void *ptr) {
+	uint8_t *p = (uint8_t *)ptr;
+
+	while (len > 0)																		// write EEPROM in pages of 128 bytes
+	{
+		DBG(EE, F("EE: wr addr: "), _HEX((uint8_t *)&addr, 2), F(", len: "), _HEX(len));
+		// enable write
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_WREN);													// send WRITE_ENABLE command to EEPROM
+		set_pin_high(EE_CS);															// disable chip select
+
+		// write data
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_WRITE);													// send WRITE command to EEPROM
+		spi_send_byte(addr >> 8);														// send address high byte
+		spi_send_byte(addr & 0xFF);														// send address low byte
+	
+		while (len > 0)
+		{
+			len--;
+			spi_send_byte(*p++);														// write data bytes to EEPROM
+			DBG(EE, F(", "), _HEX(*(p-1)));
+			if (((++addr) & 0x7F) == 0)													// send bytes until pagesize reached or all bytes sent
+				break;
+		}
+		set_pin_high(EE_CS);															// disable chip select
+		DBG(EE, F(", write page - waiting...  "));
+
+		// wait for end of write
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_RDSR);													// send READ_STATUSREGISTER command to EEPROM
+		while (spi_send_byte(0x00) & 0x01)												// check WRITE_IN_PROGRESS_BIT
+			;
+		set_pin_high(EE_CS);															// disable chip select
+		DBG(EE, F("page written\n"));
+	}
+}
+
+void clear_eeprom(uint16_t addr, uint16_t len) {
+
+	DBG(EE, F("EE: clr eeprom: "), _HEX((uint8_t *)&addr, 2), F(", len: "), _HEX((uint8_t *)&len, 2), F("\n"));
+	while (len > 0)																		// write EEPROM in pages of 128 bytes
+	{
+		// enable write
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_WREN);													// send WRITE_ENABLE command to EEPROM
+		set_pin_high(EE_CS);															// disable chip select
+
+		// write data
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_WRITE);													// send WRITE command to EEPROM
+		spi_send_byte(addr >> 8);														// send address high byte
+		spi_send_byte(addr & 0xFF);														// send address low byte
+		
+		while (len > 0)
+		{
+			len--;
+			spi_send_byte(0x00);														// clear byte
+			if (((++addr) & 0x7F) == 0)													// send bytes until pagesize reached or all bytes sent
+			break;
+		}
+		set_pin_high(EE_CS);															// disable chip select
+		//DBG(EE, F(", write page - waiting...  "));
+
+		// wait for end of write
+		set_pin_low(EE_CS);																// enable chip select
+		spi_send_byte(EE_M95512_RDSR);													// send READ_STATUSREGISTER command to EEPROM
+		while (spi_send_byte(0x00) & 0x01)												// check WRITE_IN_PROGRESS_BIT
+			;
+		set_pin_high(EE_CS);															// disable chip select
+		//DBG(EE, F("page written\n"));
+	}
+}
+
+void wait_eeprom(void) {																// wait for eeprom write finished
+	set_pin_low(EE_CS);																	// enable chip select
+	spi_send_byte(EE_M95512_RDSR);														// send READ_STATUSREGISTER command to EEPROM
+	while (spi_send_byte(0x00) & 0x01)													// check WRITE_IN_PROGRESS_BIT
+		;
+	set_pin_high(EE_CS);																// disable chip select
+}
+
+#endif
 //- -----------------------------------------------------------------------------------------------------------------------
 
 

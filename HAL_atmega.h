@@ -101,6 +101,7 @@ void init_eeprom(void);																		// init the eeprom, can be enriched for
 void get_eeprom(uint16_t addr, uint8_t len, void *ptr);										// read a specific eeprom address
 void set_eeprom(uint16_t addr, uint8_t len, void *ptr);										// write a block to a specific eeprom address
 void clear_eeprom(uint16_t addr, uint16_t len);												// and clear the eeprom
+void wait_eeprom(void);																		// wait for eeprom write finished
 //- -----------------------------------------------------------------------------------------------------------------------
 
 
